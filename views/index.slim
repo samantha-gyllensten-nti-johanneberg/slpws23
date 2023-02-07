@@ -1,0 +1,12 @@
+- if session[:id] != nil #this needs to be modified so the code is specifically for users, another identifier for if a user is admin or not in tables?
+    h1 Welcome back #{session[:username]}!
+    p It's nice to see you back again!
+- else
+    h1 Welcome to Multipets! 
+
+    p This is a game that let's you take care of unique pets of different animal combinations.
+    / p If you would like to try out the game, you can head over to the pets tab for some trial pets.
+    / Show an example of a pet to take care of with basic functions
+    p If you would like to register, please head up to the register button in the corner, and get access to the full features of the game!
+
+    

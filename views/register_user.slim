@@ -1,0 +1,23 @@
+div.registerform 
+    form action="/register_user" method="post" id="register"
+        div.usernamewrapper
+            label for="username" Username:
+            input#username type="username" name="username" placeholder="Username"
+        div.passwordwrapper
+            label for="password1" Password:  
+            input#password1 type="password" name="password1" placeholder="Password"
+        div.passwordwrapper
+            label for="password2" Confirm Password:  
+            input#password2 type="password" name="password2" placeholder="Password"
+            
+        input type="submit" value="Register"
+
+        
+- if session[:error_reg_unik]
+    p There is already a user with this username
+- if session[:error_reg_password]
+    p Different passwords entered
+
+div.registerwrapper
+    p Already registered?   
+    a href="/log_in" Log in

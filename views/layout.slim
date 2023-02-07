@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+html lang="en"
+    head
+        meta charset="UTF-8"/
+        meta http-equiv="X-UA-Compatible" content="IE=edge"/
+        meta name="viewport" content="width=device-width, initial-scale=1.0"/
+        title Multipets
+        link rel="stylesheet" href="/css/style.css"/
+    body 
+        div#body_wrapper
+            header
+                h1 
+                    a href="/"  Multipets 
+
+                div#login_nav_wrapper
+                    div#login_button
+                        - if session[:log_in] # needs to also check if admin or user
+                            a href="/log_out" 
+                                p Log out
+                        - else
+                            a href="/log_in" 
+                                p Log in
+
+                    nav
+                        a href="pets" Pets 
+                        a href="food" Food 
+                        a href="toys" Toys 
+                        a href="market" Market 
+
+            footer 
+                p INFO        
+
+            main 
+                ==yield

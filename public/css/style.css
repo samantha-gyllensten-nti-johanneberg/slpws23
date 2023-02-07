@@ -1,0 +1,77 @@
+* {
+    /* background: beige; */
+    padding: none;
+    margin: none;
+    box-sizing: border-box;
+}
+
+/* layout css */
+
+#body_wrapper {
+    display: grid;
+    grid-template-areas: 
+    "he"
+    "ma"
+    "fo"
+    ;
+    --header_height: 70px;
+    --footer_height: 70px;
+    --body_height: calc((100vh - var(--header_height)) - var(--footer_height));
+    grid-template-rows: var(--header_height) minmax(var(--body_height), 1fr) var(--footer_height);
+    grid-template-columns: minmax(375, 1fr);
+
+    background-color:grey;
+    /* This is not the full width of the browser for some reason, fix */
+}
+
+header {
+    grid-area: he;
+    background-color: blanchedalmond;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* padding: 5px;  */
+    /* width: 100vw; */
+}
+
+header a {
+    text-decoration: none;
+    color: black;
+}
+
+#login_nav_wrapper {
+    display: flex;
+    padding: 5px;
+    align-items: center;
+    justify-content: space-between;
+    width: 150px;
+}
+
+#login_button {
+    background: black;
+    padding: 5px;
+    height: 30px;
+    width: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-radius: 15px;
+}
+
+#login_button a {
+    color: white;
+    text-decoration: none;
+}
+
+main {
+    grid-area: ma;
+    background-color: aqua;
+    /* padding: 10px; */
+}
+
+footer {
+    grid-area: fo;
+    background-color: blue;
+    /* padding: 10px; */
+}
