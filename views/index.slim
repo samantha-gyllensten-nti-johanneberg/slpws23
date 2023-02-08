@@ -1,5 +1,6 @@
 - if session[:id] != nil #this needs to be modified so the code is specifically for users, another identifier for if a user is admin or not in tables?
-    h1 Welcome back #{session[:username]}!
+    / remove session username out for hash usage?
+    h1 Welcome back #{session[:username]}! 
     p It's nice to see you back again!
 - else
     h1 Welcome to Multipets! 

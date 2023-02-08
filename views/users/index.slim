@@ -1,0 +1,24 @@
+/ login and logout forms?
+/ also "button" to display user information (show) (maybe also amount of animals, etc)
+/ could also just remain login and out
+
+- if session[:log_in]
+    div.logoutform
+    p Vill du logga ut?
+    form action="/log_out" method="post"
+        input type="submit" value="Logga ut"
+- else
+    - if session[:error_log_in]
+        p Wrong username or password!
+
+    div.loginform
+        form action="/log_in" method="post" id="login"
+            div.usernamewrapper
+                label for="username" Username:
+                input#username type="username" name="username" placeholder="Username"
+            div.passwordwrapper    
+                label for="password" Password:  
+                input#password type="password" name="password" placeholder="Password"
+            input type="submit" value="Log In"
+
+    a href="/users/new" Register?

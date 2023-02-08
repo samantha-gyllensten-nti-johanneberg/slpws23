@@ -1,0 +1,8 @@
+h2 Your Monsters:
+ol 
+    - monsters.each do |monster|
+        li.entry 
+            h3 #{monster['Name']}
+                div.infobutton
+                    a href="/monsters/#{monster['Id']}" 
+                        p See information

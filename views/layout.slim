@@ -13,22 +13,41 @@ html lang="en"
                     a href="/"  Multipets 
 
                 div#login_nav_wrapper
-                    div#login_button
-                        - if session[:log_in] # needs to also check if admin or user
-                            a href="/log_out" 
-                                p Log out
-                        - else
-                            a href="/log_in" 
+                    - if session[:log_in] # needs to also check if admin or user
+                        a href="/users/#{users['Id']}" 
+                            div.login_button
+                                p Account
+                    - else
+                        a href="/users/" 
+                            div.login_button
                                 p Log in
 
-                    nav
-                        a href="pets" Pets 
-                        a href="food" Food 
-                        a href="toys" Toys 
-                        a href="market" Market 
+                    -if session[:log_in] != nil
+                        nav
+                            ul#navlinks 
+                                li 
+                                    a href="/monsters/" Pets 
+                                li 
+                                    a href="food" Food 
+                                li 
+                                    a href="toys" Toys 
+                                li 
+                                    a href="market" Market 
 
-            footer 
-                p INFO        
+                            div#hamburgermenu
+                                div.hamburgerline#line1
+                                div.hamburgerline#line2
+                                div.hamburgerline#line3
 
+            / footer 
+            /     div.footer_div
+            /         h2 Cool information         
+            /         p Lorem ipsum dolor sit, amet consectetur adipisicing elit. Non, iusto!                div.footer_div
+            /         h2 Cool information        
+            /         p Lorem ipsum dolor sit amet.
+            /         div.footer_div
+            /         h2 Cool information         
+            /         p Lorem ipsum dolor sit amet consectetur adipisicing.
+            script src="js/script.js"
             main 
                 ==yield
