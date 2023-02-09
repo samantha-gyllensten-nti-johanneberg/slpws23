@@ -1,0 +1,21 @@
+div.edit_entry
+    h2 #{monsters['Name']}
+
+    div.editwrapper
+        div.exit
+                a href="/monsters/#{monsters['Id']}" Exit
+        form action="/monsters/#{monsters['Id']}/delete" method="post"
+                input type="submit" Value="Delete"
+
+    div.information
+        form action="/monsters/#{monsters['Id']}/update" method="post"
+            label for="name" Update Pet's Name?
+            input#name type="text" name="name" placeholder="#{monsters['Name']}"
+
+            / label for="age" Age?
+            / input#weight type="number" name="age" min="0" placeholder="#{monsters['Age']}"
+
+            
+
+            input type="submit" value="Update"
+            

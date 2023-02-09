@@ -1,2 +1,28 @@
 / edit user information and delete account forms
 
+- if session[:password_checked] 
+    h1 Hi #{users['Username']}!
+    h2 Edit Information:
+    form action="/users/#{users['Id']}/update" method="post" id="update"
+        div.usernamewrapper
+            label for="username" Username:
+            input#username type="username" name="username" placeholder="Username"
+        div.passwordwrapper
+            label for="password" Password:  
+            input#password1 type="password" name="password" placeholder="Password"
+            
+        input type="submit" value="Edit"
+
+- else
+    - if session[:password_checked_error] 
+        p "Incorrect Password!"
+    h2 Please entered username and password!
+    form action="/password_check/#{users['Id']}" method="post" id="password_check"
+        div.usernamewrapper
+            label for="username" Username:
+            input#username type="username" name="username" placeholder="Username"
+        div.passwordwrapper
+            label for="password" Password:  
+            input#password1 type="password" name="password" placeholder="Password"            
+        input type="submit" value="Check"
+

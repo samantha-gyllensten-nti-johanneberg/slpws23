@@ -1,6 +1,13 @@
+div.exit
+    a href="/monsters/" Exit
 
+div#monsterinfo
+    h1 #{monsters['Name']}
+    / img src="#{monsters['ImageLink']}" alt=""/
+    / p Types:
+    p Age: #{monsters['Age']}
+    p #{monsters['Description']}
 
-
-div.editbutton 
-    a href="/monsters/#{monster['Id']}/edit" 
-        p Edit
+    div.editbutton 
+        a href="/monsters/#{monsters['Id']}/edit" 
+            p Edit

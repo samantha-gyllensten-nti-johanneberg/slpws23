@@ -8,17 +8,26 @@ def check_login(username, password)
     session[:error_log_in] = false
     checkpassword = false
 
-    db = connect_to_db()
+    db = connect_to_db_hash()
+    p "database check in login"
     p db
 
+    p "username and password check"
     p username
     p password
 
     #Compares username and password to already existing accounts
     checkusername = checkusername(username, db)
+        p "checkusername result"
         p checkusername
-    checkpassword = checkpassword(password, username, db)
-        p checkpassword
+    if checkusername != []
+        checkpassword = checkpassword(password, username, db)
+            p "checkpassword result"
+            p checkpassword
+    else
+        session[:error_log_in] = true
+        redirect('/users/')
+    end
 
     if checkusername == [] || checkpassword == false
         session[:error_log_in] = true
@@ -30,6 +39,8 @@ def check_login(username, password)
         session[:log_in] = true
         p session[:log_in]
         id = find_user_id(username, db)
+        p "ID print"
+        p id
         redirect('/')
     end
 
@@ -47,25 +58,32 @@ def connect_to_db_hash()
 end
 
 def checkusername(username, db)
-    checkuser = db.execute("SELECT * FROM users WHERE Username LIKE ?", username)
+    username = username
+    checkuser = db.execute("SELECT * FROM users WHERE Username = ?", username)
     p "Inside checkusername"
-    p checkuser[0][1]
+    p checkuser
+    # p checkuser[0][1]
     return  checkuser
 end
 
 def checkpassword(password, username, db)
-    registered_password = db.execute("SELECT Password FROM users WHERE Username LIKE ?", username)
-    p registered_password = registered_password[0][0]
+    registered_password = db.execute("SELECT Password FROM users WHERE Username = ?", username)
+    sleep 2
+    p "ENCRYPTED FIRST"
+    if registered_password != []
+        registered_password = registered_password[0][0]
+        p registered_password
+    end
     p "ENCRYPTED"
-    p BCrypt::Password.new(registered_password)
-    #$2a$12$0A/kR3Bgkawp8gpEowlpyeCeIAKkY0UjXDkq4Rb9GC4p/Ecj1heui
-    #$2a$12$WvnCwdVoQfnQpzMqCmmyKOEqmLkD2toK6POn/WEr2w9OS5WB3iXQ2
     if BCrypt::Password.new(registered_password) == password
         p "this functions as intended"
         return true
+    else
+        return false
     end
 end
 
+# This broke again
 def check_register(username, password, confirm_password)
 
     db = connect_to_db()
@@ -105,6 +123,9 @@ end
 
 def find_user_id(username, db)
     #Checks the id of the user and assigns it to the session
-    id = db.execute("SELECT Id FROM users WHERE Username LIKE ?", username)
-    session[:id] = id
+    id = db.execute("SELECT Id FROM users WHERE Username LIKE ?", username).first
+    p "find id check"
+    p id['Id']
+    session[:id] = id['Id']
+    p session[:id]
 end

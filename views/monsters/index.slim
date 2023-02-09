@@ -1,8 +1,23 @@
-h2 Your Monsters:
-ol 
-    - monsters.each do |monster|
-        li.entry 
-            h3 #{monster['Name']}
+- if users['Admin'] == "Admin"
+    h1 Create new pets?
+    a href="/monsters/new" HERE!
+
+    h1 All pets: 
+    ol
+        - monsters.each do |monster|
+            li.entry 
+                h2 #{monster['Name']}
+                div.infobutton
+                    a href="/monsters/#{monster['Id']}" 
+                        p See information
+
+
+- else 
+    h1 Your Monsters:
+    ol 
+        - monsters.each do |monster|
+            li.entry 
+                h2 #{monster['Name']}
                 div.infobutton
                     a href="/monsters/#{monster['Id']}" 
                         p See information

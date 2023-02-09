@@ -34,6 +34,10 @@ header {
     /* width: 100vw; */
 }
 
+header h1 {
+    margin: 15px;
+}
+
 header a {
     text-decoration: none;
     color: black;
@@ -67,6 +71,7 @@ header a {
     /* background: pink; */
     background-color: aquamarine;
     padding: 5px;
+    /* i want the gaps at the top and sides to be the same size */
 }
 
 .hamburgerline {
@@ -144,13 +149,6 @@ header a {
     background: black;
 } 
 
-
-
-
-
-
-
-
 .login_button {
     background: black;
     color: white;
@@ -172,6 +170,7 @@ header a {
 main {
     grid-area: ma;
     background-color: aqua;
+    padding: 15px;
     /* padding: 10px; */
 }
 

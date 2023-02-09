@@ -2,19 +2,23 @@
 / - if session[:admin] 
 /     / code that does stuff
 / - else
-h1 Username: #{users['Username']}
+div#userwrapper
+    h1 Username: #{users['Username']}
 
-a href="/users/#{users['Id']}/edit" 
-    p Edit 
-a href="/users/" 
-    p Log out 
+    a href="/users/#{users['Id']}/edit" 
+        p Edit 
+    a href="/users/" 
+        p Log out 
  
-ol
-    - if users['Admin'] == "Admin"
-        - userlist.each do |user|
-            li 
-                h2 #{user['Username']}
-                a href="edit" 
-                    p edit
-                a href="delete" 
-                    p delete
+div#otheruserswrapper 
+    - if users['Admin'] == "Admin" 
+        h1 Other users: 
+        ol
+            - userlist.each do |user|
+                li 
+                    h2 #{user['Username']}
+                    div.userinfo
+                        a href="edit" 
+                            p edit
+                        a href="delete" 
+                            p delete
