@@ -1,0 +1,23 @@
+- if users['Admin'] == "Admin"
+    h1 Create new foods?
+    a href="/foods/new" HERE!
+
+    h1 All foods: 
+    ul
+        - foods.each do |food|
+            li.entry 
+                h2 #{food['Name']}
+                div.infobutton
+                    a href="/foods/#{food['Id']}" 
+                        p See information
+
+
+- else 
+    h1 Your Foods:
+    ul 
+        - foods.each do |food|
+            li.entry 
+                h2 #{food['Name']}
+                div.infobutton
+                    a href="/foods/#{food['Id']}" 
+                        p See information

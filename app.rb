@@ -8,6 +8,8 @@ require_relative 'model' # should work, double check
 
 enable :sessions
 
+# use before blocks to check if admin, and if logged in (if not, make sure to reroute to index to avoid error messages)
+
 def userresult(db)
     id = session[:id]
     p id
@@ -112,6 +114,7 @@ post('/password_check/:id') do
         # Needs to do checks to see that password is correct first, safety whoop whoop, use the already made function, just needs a form on edit (maybe use sessions?)
 
     check = checkpassword(password, username, db)
+    # could this in theory be moved into the function?
     if check
         session[:password_checked] = true
     else
@@ -152,7 +155,7 @@ end
 
 get('/monsters/') do
     if session[:log_in]
-        id = session[:id] #does this work logged out?
+        id = session[:id]
         db = connect_to_db_hash()
         
         userresult = userresult(db)
@@ -200,8 +203,14 @@ end
 post('/monsters') do
     name = params[:name]
     age = params[:age]
+    desc = params[:desc]
     type1 = params[:type1]
     type2 = params[:type2]
+    userid = session[:id]
+    fed = "No"
+
+    db = connect_to_db_hash
+    db.execute("INSERT INTO monsters (Name, Age, Fed, UserId, Description) VALUES (?, ?, ?, ?, ?)", name, age, fed, userid, desc)
 
     redirect('/monsters/')
 end
@@ -218,6 +227,80 @@ post('/monsters/:id/update') do
 
     redirect('/monsters/')
 end
+
+# Foods
+
+get('/foods/') do
+    if session[:log_in]
+        id = session[:id]
+        db = connect_to_db_hash()
+        
+        userresult = userresult(db)
+        if userresult['Admin'] == "Admin"
+            result = db.execute("SELECT * FROM foods")
+            p result
+            p "Lookie"
+        else
+            result = db.execute("SELECT * FROM foods WHERE UserId = ?", id)
+        end
+        slim(:"foods/index", locals:{foods:result, users:userresult})
+    else
+        slim(:"foods/index")
+    end
+end
+
+get('/foods/new') do
+    db = connect_to_db_hash()
+    userresult = userresult(db)
+
+    slim(:"foods/new", locals:{users:userresult})
+end
+
+get('/foods/:id') do
+    id = params[:id].to_i
+    db = connect_to_db_hash()
+    
+    userresult = userresult(db)
+    result = db.execute("SELECT * FROM foods WHERE Id = ?", id).first
+
+    slim(:"foods/show", locals:{foods:result, users:userresult})
+end
+
+get('/foods/:id/edit') do
+    id = params[:id].to_i
+    db = connect_to_db_hash()
+    
+    userresult = userresult(db)
+    result = db.execute("SELECT * FROM foods WHERE Id = ?", id).first
+
+    slim(:"foods/edit", locals:{foods:result, users:userresult})
+end
+
+post('/foods') do
+    name = params[:name]
+    desc = params[:desc]
+    # type1 = params[:type1]
+    # type2 = params[:type2]
+
+    db = connect_to_db_hash
+    db.execute("INSERT INTO foods (Name, Description) VALUES (?, ?)", name, desc)
+
+    redirect('/foods/')
+end
+
+post('/foods/:id/update') do
+    id = params[:id]
+    db = connect_to_db_hash
+
+    name = params[:name]
+
+    if params[:name] != ""
+        db.execute("UPDATE foods SET Name = ? WHERE Id = ?", name, id)
+    end
+
+    redirect('/monsters/')
+end
+
 
 # Helpers
 

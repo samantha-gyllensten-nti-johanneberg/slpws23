@@ -12,10 +12,19 @@ div.edit_entry
             label for="name" Update Pet's Name?
             input#name type="text" name="name" placeholder="#{monsters['Name']}"
 
-            / label for="age" Age?
-            / input#weight type="number" name="age" min="0" placeholder="#{monsters['Age']}"
+            - if users['Admin'] == "Admin"
+                label for="age" Age?
+                input#weight type="number" name="age" min="0" placeholder="#{monsters['Age']}"
 
-            
+                label for="desc" Pet's Description?
+                input#name type="text" name="desc" placeholder="Pet's Description"
+
+                label for="age" Owner (Id)?
+                input#weight type="number" name="userid" min="0" placeholder="#{monsters['Age']}"
+
+    
 
             input type="submit" value="Update"
+
+/ there needs to be a version for just selling the pet itself and changing owners
             

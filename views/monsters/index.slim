@@ -3,7 +3,7 @@
     a href="/monsters/new" HERE!
 
     h1 All pets: 
-    ol
+    ul
         - monsters.each do |monster|
             li.entry 
                 h2 #{monster['Name']}
@@ -14,7 +14,7 @@
 
 - else 
     h1 Your Monsters:
-    ol 
+    ul 
         - monsters.each do |monster|
             li.entry 
                 h2 #{monster['Name']}

@@ -1,0 +1,13 @@
+div.exit
+    a href="/foods/" Exit
+
+div#foodinfo
+    h1 #{foods['Name']}
+    / img src="#{monsters['ImageLink']}" alt=""/
+    / p Types:
+    p #{foods['Description']}
+
+    - if users['Admin'] == "Admin" 
+        div.editbutton 
+            a href="/foods/#{foods['Id']}/edit" 
+                p Edit

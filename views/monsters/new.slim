@@ -1,3 +1,5 @@
+/ - if userresult['Admin'] == "Admin"
+
 div.exit
     a href="/monsters/" Exit
 
@@ -7,6 +9,9 @@ form action="/monsters" method="post"
 
     label for="age" Age:
     input#weight type="number" name="age" min="0" placeholder="Pet's Age"
+
+    label for="desc" Pet's Description:
+    input#name type="text" name="desc" placeholder="Pet's Description"
     
     label for="type1" Type 1:
     input#weight type="text" name="type1" placeholder="Pet's First Type"
@@ -15,4 +20,5 @@ form action="/monsters" method="post"
     input#weight type="text" name="type2" placeholder="Pet's Second Type"
 
     input type="submit" value="Create"
-    
+/ - else
+/     h2 You do not have access to this function
