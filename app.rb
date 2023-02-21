@@ -298,7 +298,7 @@ post('/foods/:id/update') do
         db.execute("UPDATE foods SET Name = ? WHERE Id = ?", name, id)
     end
 
-    redirect('/monsters/')
+    redirect('/foods/')
 end
 
 

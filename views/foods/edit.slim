@@ -1,0 +1,18 @@
+div.edit_entry
+    h2 #{foods['Name']}
+
+    div.editwrapper
+        div.exit
+                a href="/foods/#{foods['Id']}" Exit
+        form action="/foods/#{foods['Id']}/delete" method="post"
+                input type="submit" Value="Delete"
+
+    div.information
+        form action="/foods/#{foods['Id']}/update" method="post"
+            label for="name" Update Food's Name?
+            input#name type="text" name="name" placeholder="#{foods['Name']}"
+
+            label for="desc" Description?
+            input#weight type="number" name="age" min="0" placeholder="#{foods['Description']}"
+
+            input type="submit" value="Update"

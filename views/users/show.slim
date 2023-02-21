@@ -12,13 +12,28 @@ div#userwrapper
  
 div#otheruserswrapper 
     - if users['Admin'] == "Admin" 
-        h1 Other users: 
-        ol
-            - userlist.each do |user|
-                li 
-                    h2 #{user['Username']}
-                    div.userinfo
-                        a href="edit" 
-                            p edit
-                        a href="delete" 
-                            p delete
+        h1 Users: 
+        ul
+            - userlist.each do |user| 
+                -if user['Admin'] != "Admin"
+                    li
+                        h2 #{user['Username']}
+                        h3 Id: #{user['Id']} 
+                        div.userinfo
+                            a href="edit" 
+                                p edit
+                            a href="delete" 
+                                p delete
+
+        h1 Admins:
+        ul
+            - userlist.each do |user| 
+                -if user['Admin'] == "Admin"
+                    li
+                        h2 #{user['Username']}
+                        h3 Id: #{user['Id']} 
+                        div.userinfo
+                            a href="edit" 
+                                p edit
+                            a href="delete" 
+                                p delete
