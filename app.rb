@@ -105,7 +105,9 @@ post('/password_check/:id') do
     session[:password_checked] = false
     # These might need to be placed elsewhere to make sure it doesnt permanently save
 
-    id = params[:id]
+    id = params["id"].to_i
+    p id
+    p "lasre"
     password = params[:password]
     db = connect_to_db_hash
 
@@ -121,7 +123,8 @@ post('/password_check/:id') do
         session[:password_checked_error] = true
     end
 
-    redirect('/users/:id/edit')
+    id = db.execute("SELECT Id FROM users WHERE id")
+    redirect('/users/#{id}/edit') #currently the id will redirect wrong if an admin tries to edit
 
 end
 
@@ -216,6 +219,8 @@ post('/monsters') do
 end
 
 post('/monsters/:id/update') do
+    # check user owns pets
+    # check if user is admin
     id = params[:id]
     db = connect_to_db_hash
 
@@ -368,23 +373,27 @@ end
 post('/toys') do
     name = params[:name]
     desc = params[:desc]
-    # type1 = params[:type1]
-    # type2 = params[:type2]
+    type = params[:type]
 
     db = connect_to_db_hash
-    db.execute("INSERT INTO toys (Name, Description) VALUES (?, ?)", name, desc)
+    db.execute("INSERT INTO toys (Name, Description, AnimalType) VALUES (?, ?, ?)", name, desc, type)
 
     redirect('/toys/')
 end
 
 post('/toys/:id/update') do
     id = params[:id]
-    db = connect_to_db_hash
-
     name = params[:name]
+    desc = params[:desc]
+    type = params[:type]
+    db = connect_to_db_hash
 
     if params[:name] != ""
         db.execute("UPDATE toys SET Name = ? WHERE Id = ?", name, id)
+    elsif params[:desc] != ""
+        db.execute("UPDATE toys SET Descrpition = ? WHERE Id = ?", desc, id)
+    elsif params[:type] != ""
+        db.execute("UPDATE toys SET AnimalType = ? WHERE Id = ?", type, id)
     end
 
     redirect('/toys/')

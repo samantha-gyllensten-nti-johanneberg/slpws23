@@ -1,0 +1,23 @@
+div.edit_entry
+    h2 #{toys['Name']}
+
+    div.editwrapper
+        div.exit
+                a href="/toys/#{toys['Id']}" Exit
+        form action="/toys/#{toys['Id']}/delete" method="post"
+                input type="submit" Value="Delete"
+
+    div.information
+        form action="/toys/#{toys['Id']}/update" method="post"
+            label for="name" Update Toy's Name?
+            input#name type="text" name="name" placeholder="#{toys['Name']}"
+
+            label for="desc" Toy's Description?
+            input#name type="text" name="desc" placeholder="#{toys['Description']}"
+
+            label for="type" Type?
+            input#weight type="text" name="type" placeholder="#{toys['AnimalType']}"
+
+            input type="submit" value="Update"
+
+/ there needs to be a version for just selling the pet itself and changing owners

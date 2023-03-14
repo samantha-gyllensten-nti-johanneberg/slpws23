@@ -1,0 +1,18 @@
+/ - if userresult['Admin'] == "Admin"
+
+div.exit
+    a href="/toys/" Exit
+
+form action="/toys" method="post"
+    label for="name" Toy's Name:
+    input#name type="text" name="name" placeholder="Toy's Name"
+
+    label for="desc" Toy's Description:
+    input#name type="text" name="desc" placeholder="Toy's Description"
+    
+    label for="type" Toy's Type:
+    input#weight type="text" name="type" placeholder="Toy's Type"
+
+    input type="submit" value="Create"
+/ - else
+/     h2 You do not have access to this function

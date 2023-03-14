@@ -1,0 +1,13 @@
+div.exit
+    a href="/toys/" Exit
+
+div#monsterinfo
+    h1 #{toys['Name']}
+    / img src="#{monsters['ImageLink']}" alt=""/
+    / p Types:
+    p #{toys['Description']}
+    P Works with #{toys['AnimalType']} type pets!
+
+    div.editbutton 
+        a href="/toys/#{toys['Id']}/edit" 
+            p Edit

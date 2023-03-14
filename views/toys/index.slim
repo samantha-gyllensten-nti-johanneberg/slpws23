@@ -1,0 +1,23 @@
+- if users['Admin'] == "Admin"
+    h1 Create new toys?
+    a href="/toys/new" HERE!
+
+    h1 All toys: 
+    ul
+        - toys.each do |toy|
+            li.entry 
+                h2 #{toy['Name']}
+                div.infobutton
+                    a href="/toys/#{toy['Id']}" 
+                        p See information
+
+
+- else 
+    h1 Your toys:
+    ul 
+        - toys.each do |toy|
+            li.entry 
+                h2 #{toy['Name']}
+                div.infobutton
+                    a href="/toys/#{toy['Id']}" 
+                        p See information

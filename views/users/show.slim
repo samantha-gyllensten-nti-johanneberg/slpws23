@@ -20,7 +20,7 @@ div#otheruserswrapper
                         h2 #{user['Username']}
                         h3 Id: #{user['Id']} 
                         div.userinfo
-                            a href="edit" 
+                            a href="/users/#{user['Id']}/edit" 
                                 p edit
                             a href="delete" 
                                 p delete
@@ -33,7 +33,7 @@ div#otheruserswrapper
                         h2 #{user['Username']}
                         h3 Id: #{user['Id']} 
                         div.userinfo
-                            a href="edit" 
+                            a href="/users/#{user['Id']}/edit" 
                                 p edit
                             a href="delete" 
                                 p delete
