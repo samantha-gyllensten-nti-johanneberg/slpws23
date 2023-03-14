@@ -13,7 +13,7 @@ enable :sessions
 def userresult(db)
     id = session[:id]
     p id
-    userresult = db.execute("SELECT * FROM users WHERE Id LIKE ?", id).first
+    userresult = db.execute("SELECT * FROM users WHERE Id = ?", id).first
     return userresult
 end
 
@@ -220,9 +220,21 @@ post('/monsters/:id/update') do
     db = connect_to_db_hash
 
     name = params[:name]
+    age = params[:age]
+    desc = params[:desc]
+    userid = params[:id]
 
     if params[:name] != ""
         db.execute("UPDATE monsters SET Name = ? WHERE Id = ?", name, id)
+    end
+    if params[:age] != ""
+        db.execute("UPDATE monsters SET Age = ? WHERE Id = ?", age, id)
+    end
+    if params[:desc] != ""
+        db.execute("UPDATE monsters SET Description = ? WHERE Id = ?", desc, id)
+    end
+    if params[:id] != ""
+        db.execute("UPDATE monsters SET UserId = ? WHERE Id = ?", userid, id)
     end
 
     redirect('/monsters/')
@@ -293,12 +305,89 @@ post('/foods/:id/update') do
     db = connect_to_db_hash
 
     name = params[:name]
+    desc = params[:desc]
 
     if params[:name] != ""
         db.execute("UPDATE foods SET Name = ? WHERE Id = ?", name, id)
     end
+    if params[:desc] != ""
+        db.execute("UPDATE foods SET Description = ? WHERE Id = ?", desc, id)
+    end
 
     redirect('/foods/')
+end
+
+# Toys
+
+get('/toys/') do
+    if session[:log_in]
+        id = session[:id]
+        db = connect_to_db_hash()
+        
+        userresult = userresult(db)
+        if userresult['Admin'] == "Admin"
+            result = db.execute("SELECT * FROM toys")
+            p result
+            p "Lookie"
+        else
+            result = db.execute("SELECT * FROM toys WHERE UserId = ?", id)
+        end
+        slim(:"toys/index", locals:{toys:result, users:userresult})
+    else
+        slim(:"toys/index")
+    end
+end
+
+get('/toys/new') do
+    db = connect_to_db_hash()
+    userresult = userresult(db)
+
+    slim(:"toys/new", locals:{users:userresult})
+end
+
+get('/toys/:id') do
+    id = params[:id].to_i
+    db = connect_to_db_hash()
+    
+    userresult = userresult(db)
+    result = db.execute("SELECT * FROM toys WHERE Id = ?", id).first
+
+    slim(:"toys/show", locals:{toys:result, users:userresult})
+end
+
+get('/toys/:id/edit') do
+    id = params[:id].to_i
+    db = connect_to_db_hash()
+    
+    userresult = userresult(db)
+    result = db.execute("SELECT * FROM toys WHERE Id = ?", id).first
+
+    slim(:"toys/edit", locals:{toys:result, users:userresult})
+end
+
+post('/toys') do
+    name = params[:name]
+    desc = params[:desc]
+    # type1 = params[:type1]
+    # type2 = params[:type2]
+
+    db = connect_to_db_hash
+    db.execute("INSERT INTO toys (Name, Description) VALUES (?, ?)", name, desc)
+
+    redirect('/toys/')
+end
+
+post('/toys/:id/update') do
+    id = params[:id]
+    db = connect_to_db_hash
+
+    name = params[:name]
+
+    if params[:name] != ""
+        db.execute("UPDATE toys SET Name = ? WHERE Id = ?", name, id)
+    end
+
+    redirect('/toys/')
 end
 
 
