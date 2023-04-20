@@ -65,9 +65,16 @@ end
 
 get('/users/:id/edit') do
     id = params[:id].to_i
+    p "id for get"
+    p id
     db = connect_to_db_hash()
 
     userresult = userresult(db)
+    p "userresult check"
+    p userresult['Id']
+    if userresult['Id'] != id
+        userresult['Id'] = id
+    end
 
     slim(:"users/edit", locals:{users:userresult})
 end
@@ -105,26 +112,34 @@ post('/password_check/:id') do
     session[:password_checked] = false
     # These might need to be placed elsewhere to make sure it doesnt permanently save
 
-    id = params["id"].to_i
+    id = params[:id]
     p id
     p "lasre"
     password = params[:password]
+    username = params[:username]
     db = connect_to_db_hash
 
-    user = db.execute("SELECT * FROM users WHERE Id = ?", id).first
-    username = user['Username']
-        # Needs to do checks to see that password is correct first, safety whoop whoop, use the already made function, just needs a form on edit (maybe use sessions?)
 
-    check = checkpassword(password, username, db)
-    # could this in theory be moved into the function?
-    if check
-        session[:password_checked] = true
+    user = db.execute("SELECT * FROM users WHERE Id = ?", id).first
+    p user
+    p username == user['Username']
+    if username == user['Username']
+    
+        check = checkpassword(password, username, db)
+        p check
+        # could this in theory be moved into the function?
+        if check
+            session[:password_checked] = true
+        else
+            session[:password_checked_error] = true
+        end
     else
         session[:password_checked_error] = true
     end
 
-    id = db.execute("SELECT Id FROM users WHERE id")
-    redirect('/users/#{id}/edit') #currently the id will redirect wrong if an admin tries to edit
+    p session[:password_checked_error]
+    # id = db.execute("SELECT Id FROM users WHERE id")
+    redirect("/users/#{id}/edit") #currently the id will redirect wrong if an admin tries to edit
 
 end
 
@@ -190,7 +205,13 @@ get('/monsters/:id') do
     userresult = userresult(db)
     result = db.execute("SELECT * FROM monsters WHERE Id = ?", id).first
 
-    slim(:"monsters/show", locals:{monsters:result, users:userresult})
+    resulttype = db.execute("SELECT * FROM monsters_monstertypes_rel INNER JOIN monstertypes ON monsters_monstertypes_rel.TypeId = monstertypes.Id INNER JOIN monstertypes_foods_rel ON monsters_monstertypes_rel.TypeId = monstertypes_foods_rel.TypeId WHERE MonsterId = ?", id)
+
+    # OBS!! Still needs a popup for feeding and code for that
+    # Compatable foods is stored in resulttype for now, is this optimal? 
+    # The foods still need to be called on when food is selected
+
+    slim(:"monsters/show", locals:{monsters:result, types:resulttype, users:userresult})
 end
 
 get('/monsters/:id/edit') do
@@ -397,6 +418,20 @@ post('/toys/:id/update') do
     end
 
     redirect('/toys/')
+end
+
+# market
+
+get('/market/') do
+    db = connect_to_db_hash()
+    # result = db.execute("SELECT * FROM market INNER JOIN monsters ON monsters.Id = market.MonsterId INNER JOIN toys ON toys.Id = market.ToyId INNER JOIN foods ON foods.Id = market.FoodId")
+    # p "inner join result"
+    # p result
+
+    userresult = userresult(db) 
+    # this could probably be turned into a before block so as to clean the code
+
+    slim(:"market/index", locals:{users:userresult})
 end
 
 

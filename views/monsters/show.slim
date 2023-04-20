@@ -7,7 +7,15 @@ div#monsterinfo
     / p Types:
     p Age: #{monsters['Age']}
     p #{monsters['Description']}
+    p Types:
+    - types.each do |type|
+        p #{type['Type']}
 
     div.editbutton 
         a href="/monsters/#{monsters['Id']}/edit" 
             p Edit
+    div.editbutton 
+        a href="/monsters/#{monsters['Id']}/edit" 
+            p Sell
+            / There needs to be a way to check if the sell button was pressed, check through presentations
+            / ALso this code isnt working for some reason lol
