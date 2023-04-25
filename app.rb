@@ -2,6 +2,7 @@
 require 'sinatra'
 require 'slim'
 require 'sinatra/reloader'
+# require 'sinatra/flash'
 require 'sqlite3'
 require 'bcrypt'
 require_relative 'model' # should work, double check
@@ -9,23 +10,44 @@ require_relative 'model' # should work, double check
 enable :sessions
 
 # use before blocks to check if admin, and if logged in (if not, make sure to reroute to index to avoid error messages)
+before do
+
+    restricted_paths = ['/monsters', '/market', '/toys']
+
+    for i in 0..restricted_paths.length-1
+        p "honesty"
+        restricted_paths[i] = Regexp.new(restricted_paths[i])
+        p restricted_paths[i]
+        match = /#{restricted_paths[i]}/.match(request.path_info)
+        p match
+        if match && session[:log_in] != true || /\/users\/\d/.match(request.path_info) && session[:log_in] != true
+            redirect('/')
+        end
+    end
+
+end
 
 def userresult(db)
     id = session[:id]
-    p id
     userresult = db.execute("SELECT * FROM users WHERE Id = ?", id).first
+
     return userresult
 end
 
+# helpers do
+
+#     def admin_check
+        
+#     end
+
+# end
+
 get('/') do
-    p "Session login check"
-    p session[:log_in]
+
     if session[:log_in]
         db = connect_to_db_hash()
-        p db
-        
         userresult = userresult(db)
-        p userresult
+
         slim(:"index", locals:{users:userresult})
     else
         slim(:"index")
@@ -38,8 +60,8 @@ end
 get('/users/') do
     if session[:log_in]
         db = connect_to_db_hash()
-        
         userresult = userresult(db)
+
         slim(:"users/index", locals:{users:userresult})
     else
         slim(:"users/index")
@@ -55,6 +77,7 @@ get('/users/:id') do
     db = connect_to_db_hash()
     
     userresult = userresult(db)
+
     if userresult['Admin'] == "Admin"
         result = db.execute("SELECT Id, Username, Admin FROM users")
         slim(:"users/show", locals:{users:userresult, userlist:result})
@@ -65,13 +88,10 @@ end
 
 get('/users/:id/edit') do
     id = params[:id].to_i
-    p "id for get"
-    p id
     db = connect_to_db_hash()
 
     userresult = userresult(db)
-    p "userresult check"
-    p userresult['Id']
+
     if userresult['Id'] != id
         userresult['Id'] = id
     end
@@ -79,17 +99,11 @@ get('/users/:id/edit') do
     slim(:"users/edit", locals:{users:userresult})
 end
 
-#could login and logout possibly be restfuled for post?
 post('/log_in') do
     username = params[:username]
     password = params[:password]
-    p "Step 1:"
-    p username
-    p password
 
     check_login = check_login(username, password)
-    p "Step 2:"
-    p check_login
 end
 
 post('/log_out') do
@@ -104,7 +118,7 @@ post('/register_user') do
 
     check_register(username, password, confirm_password)
 
-    redirect('/') #THIS NEEDS MOVING
+    redirect('/users/') #THIS NEEDS MOVING
 end
 
 post('/password_check/:id') do
@@ -113,20 +127,17 @@ post('/password_check/:id') do
     # These might need to be placed elsewhere to make sure it doesnt permanently save
 
     id = params[:id]
-    p id
-    p "lasre"
     password = params[:password]
     username = params[:username]
     db = connect_to_db_hash
 
 
     user = db.execute("SELECT * FROM users WHERE Id = ?", id).first
-    p user
-    p username == user['Username']
+
     if username == user['Username']
     
         check = checkpassword(password, username, db)
-        p check
+
         # could this in theory be moved into the function?
         if check
             session[:password_checked] = true
@@ -137,7 +148,6 @@ post('/password_check/:id') do
         session[:password_checked_error] = true
     end
 
-    p session[:password_checked_error]
     # id = db.execute("SELECT Id FROM users WHERE id")
     redirect("/users/#{id}/edit") #currently the id will redirect wrong if an admin tries to edit
 
@@ -179,14 +189,12 @@ get('/monsters/') do
         userresult = userresult(db)
         if userresult['Admin'] == "Admin"
             result = db.execute("SELECT * FROM monsters")
-            p result
-            p "Lookie"
         else
             result = db.execute("SELECT * FROM monsters WHERE UserId = ?", id)
         end
         slim(:"monsters/index", locals:{monsters:result, users:userresult})
     else
-        slim(:"monsters/index")
+        slim(:"index")
     end
 end
 
@@ -194,8 +202,9 @@ end
 get('/monsters/new') do
     db = connect_to_db_hash()
     userresult = userresult(db)
+    result = db.execute("SELECT * FROM monstertypes")
 
-    slim(:"monsters/new", locals:{users:userresult})
+    slim(:"monsters/new", locals:{users:userresult, types:result})
 end
 
 get('/monsters/:id') do
@@ -205,11 +214,10 @@ get('/monsters/:id') do
     userresult = userresult(db)
     result = db.execute("SELECT * FROM monsters WHERE Id = ?", id).first
 
-    resulttype = db.execute("SELECT * FROM monsters_monstertypes_rel INNER JOIN monstertypes ON monsters_monstertypes_rel.TypeId = monstertypes.Id INNER JOIN monstertypes_foods_rel ON monsters_monstertypes_rel.TypeId = monstertypes_foods_rel.TypeId WHERE MonsterId = ?", id)
+    resulttype = db.execute("SELECT Type FROM monsters_monstertypes_rel INNER JOIN monstertypes ON monsters_monstertypes_rel.TypeId = monstertypes.Id WHERE MonsterId = ?", id)
 
     # OBS!! Still needs a popup for feeding and code for that
-    # Compatable foods is stored in resulttype for now, is this optimal? 
-    # The foods still need to be called on when food is selected
+    # Food needs to be added so that compatable foods can be viewed and fed to the pet
 
     slim(:"monsters/show", locals:{monsters:result, types:resulttype, users:userresult})
 end
@@ -219,9 +227,11 @@ get('/monsters/:id/edit') do
     db = connect_to_db_hash()
     
     userresult = userresult(db)
-    result = db.execute("SELECT * FROM monsters WHERE Id = ?", id).first
+    monsterresult = db.execute("SELECT * FROM monsters WHERE Id = ?", id).first
+    typeresult = db.execute("SELECT monsters_monstertypes_rel.TypeId, monstertypes.Type FROM monsters_monstertypes_rel INNER JOIN monsters ON monsters_monstertypes_rel.MonsterId = monsters.Id INNER JOIN monstertypes ON monsters_monstertypes_rel.TypeId = monstertypes.Id WHERE monsters.Id = ?", id)
+    alltypes = db.execute("SELECT * FROM monstertypes")
 
-    slim(:"monsters/edit", locals:{monsters:result, users:userresult})
+    slim(:"monsters/edit", locals:{monsters:monsterresult, users:userresult, monstertypes:typeresult, alltypes:alltypes})
 end
 
 post('/monsters') do
@@ -232,9 +242,20 @@ post('/monsters') do
     type2 = params[:type2]
     userid = session[:id]
     fed = "No"
+    session[:type_match] = false
 
     db = connect_to_db_hash
+
+    if type1 == type2
+        session[:type_match] = true
+        redirect('/monsters/new')
+    end
+
     db.execute("INSERT INTO monsters (Name, Age, Fed, UserId, Description) VALUES (?, ?, ?, ?, ?)", name, age, fed, userid, desc)
+    id = db.execute("SELECT last_insert_rowid()")
+    id = id[0]["last_insert_rowid()"]
+    db.execute("INSERT INTO monsters_monstertypes_rel (TypeId, MonsterId) VALUES (?, ?)", type1, id)
+    db.execute("INSERT INTO monsters_monstertypes_rel (TypeId, MonsterId) VALUES (?, ?)", type2, id)
 
     redirect('/monsters/')
 end
@@ -249,6 +270,15 @@ post('/monsters/:id/update') do
     age = params[:age]
     desc = params[:desc]
     userid = params[:id]
+    type1 = params[:type1]
+    type2 = params[:type2]
+    p "updates type"
+    p type1
+    p type2
+    previous_types = db.execute("SELECT TypeId FROM monsters_monstertypes_rel WHERE MonsterId = ?", id)
+    p previous_types
+    p previous_types[0]['TypeId']
+    p previous_types[1]['TypeId']
 
     if params[:name] != ""
         db.execute("UPDATE monsters SET Name = ? WHERE Id = ?", name, id)
@@ -262,8 +292,18 @@ post('/monsters/:id/update') do
     if params[:id] != ""
         db.execute("UPDATE monsters SET UserId = ? WHERE Id = ?", userid, id)
     end
+    if params[:type1] != "" 
+        db.execute("UPDATE monsters_monstertypes_rel SET TypeId = ? WHERE MonsterId = ? AND TypeId = ?", type1, id, previous_types[0]['TypeId'])
+    end
+    if  params[:type2] != ""
+        db.execute("UPDATE monsters_monstertypes_rel SET TypeId = ? WHERE MonsterId = ? AND TypeId = ?", type2, id, previous_types[1]['TypeId'])
+    end
 
     redirect('/monsters/')
+end
+
+post('/monsters/:id/update') do
+    # delete stuff
 end
 
 # Foods

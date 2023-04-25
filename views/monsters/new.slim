@@ -1,5 +1,9 @@
 / - if userresult['Admin'] == "Admin"
 
+/this could be a popup instead, but for now, this works. 
+- if session[:type_match]
+    p "You have entered the same type twice
+
 div.exit
     a href="/monsters/" Exit
 
@@ -14,10 +18,15 @@ form action="/monsters" method="post"
     input#name type="text" name="desc" placeholder="Pet's Description"
     
     label for="type1" Type 1:
-    input#weight type="text" name="type1" placeholder="Pet's First Type"
+    select#type1 name="type1" 
+        - types.each do |type| 
+            option value="#{type['Id']}"#{type['Type']} 
 
     label for="type2" Type 2:
-    input#weight type="text" name="type2" placeholder="Pet's Second Type"
+    select#type2 name="type2" 
+        - types.each do |type| 
+            option value="#{type['Id']}"#{type['Type']} 
+   
 
     input type="submit" value="Create"
 / - else

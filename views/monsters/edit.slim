@@ -22,7 +22,17 @@ div.edit_entry
                 label for="userid" User (Id number)?
                 input#weight type="number" name="userid" min="0" placeholder="#{monsters['UserId']}"
 
-    
+                label for="type1" Type 1:
+                select#type1 name="type1" 
+                    option selected="" value="#{monstertypes[0]['TypeId']}" #{monstertypes[0]['Type']} 
+                    - alltypes.each do |type| 
+                        option value="#{type['Id']}" #{type['Type']} 
+
+                label for="type2" Type 2:
+                select#type2 name="type2" 
+                    option selected="" value="#{monstertypes[1]['TypeId']}" #{monstertypes[1]['Type']} 
+                    - alltypes.each do |type| 
+                        option value="#{type['Id']}" #{type['Type']} 
 
             input type="submit" value="Update"
 
