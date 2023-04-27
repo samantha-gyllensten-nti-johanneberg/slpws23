@@ -5,6 +5,42 @@
     box-sizing: border-box;
 }
 
+a {
+    color: rgb(165, 121, 55);
+    padding-bottom: 7px;
+    padding-top: 7px;
+}
+
+h1 {
+    color: rgb(165, 121, 55);
+    text-decoration: underline;
+    padding-bottom: 20px;
+    padding-top: 20px;
+}
+h3 {
+    color: rgb(165, 121, 55);
+    padding-bottom: 7px;
+    padding-top: 7px;
+}
+h2 {
+    color: rgb(165, 121, 55);
+    padding-bottom: 15px;
+    padding-top: 15px;
+}
+p {
+    color: brown;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+ul {
+    list-style: none;
+}
+
+form {
+    color: rgb(212, 212, 212);
+}
+
 /* layout css */
 
 #body_wrapper {
@@ -15,18 +51,16 @@
     "fo"
     ;
     --header_height: 70px;
-    /* --footer_height: 70px; */
     --body_height: calc(100vh - var(--header_height));
     grid-template-rows: var(--header_height) minmax(var(--body_height), 1fr); /*might break if the page is made shorter*/
     grid-template-columns: minmax(375, 1fr);
 
-    background-color:grey;
-    /* This is not the full width of the browser for some reason, fix */
 }
 
 header {
     grid-area: he;
-    background-color: blanchedalmond;
+    background: rgb(212, 161, 85);
+    border-bottom: rgb(165, 121, 55) solid 2px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -69,7 +103,6 @@ header a {
 
 #hamburgermenu {
     /* background: pink; */
-    background-color: aquamarine;
     padding: 5px;
     /* i want the gaps at the top and sides to be the same size */
 }
@@ -106,7 +139,7 @@ header a {
 #navlinks a {
     text-decoration: none;
     letter-spacing: 0.1875rem;
-    color: white;
+    color: rgb(212, 161, 85);
     font-size: 2.125rem;
     text-transform: uppercase;
     width: 100%;
@@ -118,26 +151,15 @@ header a {
 }
 
 #navlinks a:hover {
-    font-weight: bold;
     background: none;
-    background: grey;
+    color: antiquewhite;
+    background: rgb(165, 121, 55);
     width: 200px;
 }
 
-/* .hamburgerline {
-    width: 35px;
-    height: 4px;
-    background: #6AF9E0;
-    margin: 8px;
-    margin-right: 10px;
-    border-radius: 10%;
-    transition: all 0.5s;
-    cursor: pointer;
-} */
-
 .crossedline #line1 {
     transform: rotate(-45deg) translate(-7px, 10px);
-    background: black;
+    background: rgb(165, 121, 55);
 }
 
 .crossedline #line2 {
@@ -146,7 +168,7 @@ header a {
 
 .crossedline #line3 {
     transform: rotate(45deg) translate(-7px, -10px);
-    background: black;
+    background: rgb(165, 121, 55);
 } 
 
 .login_button {
@@ -159,23 +181,17 @@ header a {
     align-items: center;
     justify-content: center;
     text-align: center;
+    font-style: bold;
     border-radius: 15px;
 }
 
 .login_button:hover {
-    color: black;
-    background: white;
+    background: bisque;
 }
 
 main {
     grid-area: ma;
-    background-color: aqua;
+    background-color: bisque;
     padding: 15px;
-    /* padding: 10px; */
-}
-
-footer {
-    grid-area: fo;
-    background-color: blue;
     /* padding: 10px; */
 }

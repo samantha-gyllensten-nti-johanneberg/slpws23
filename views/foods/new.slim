@@ -1,3 +1,6 @@
+- if session[:type_match]
+    p You have entered repeated types
+
 div.exit
     a href="/foods/" Exit
 
@@ -7,15 +10,24 @@ form action="/foods" method="post"
 
     label for="desc" Description:
     input#weight type="text" name="desc" placeholder="Description"
+
+    label for="type1" Type 1:
+    select#type1 name="type1" 
+        - alltypes.each do |type| 
+            option value="#{type['Id']}" #{type['Type']} 
+
+    label for="type2" Type 2:
+    select#type2 name="type2" 
+        - alltypes.each do |type| 
+            option value="#{type['Id']}" #{type['Type']}
+
+    label for="type3" Type 3:
+    select#type3 name="type3" 
+        - alltypes.each do |type| 
+            option value="#{type['Id']}" #{type['Type']}
+
+
     
-    / code for compatable monsters
-    /should this be able to be compatable with more than 2 types of monsters? how can we make user input decide total permitted
-    / label for="type1" Type 1:
-    / input#weight type="text" name="type1" placeholder="Compatable Type"
-
-    / label for="type2" Type 2:
-    / input#weight type="text" name="type2" placeholder="Compatable Type"
-
     / this should be its own form, which can keep redirecting back to new but with new forms visible
 
     input type="submit" value="Create"

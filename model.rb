@@ -2,6 +2,13 @@
 require 'bcrypt'
 enable :sessions
 
+def userresult(db)
+    id = session[:id]
+    userresult = db.execute("SELECT * FROM users WHERE Id = ?", id).first
+
+    return userresult
+end
+
 def check_login(username, password)
 
     #perhaps add a length check to see entered stuff isnt too long, maybe should be seperate function or in app.rb
@@ -53,12 +60,12 @@ def checkusername(username, db)
     username = username
     checkuser = db.execute("SELECT * FROM users WHERE Username = ?", username)
 
-    return  checkuser
+    return checkuser
 end
 
 def checkpassword(password, username, db)
     registered_password = db.execute("SELECT Password FROM users WHERE Username = ?", username)
-    sleep 2
+    # sleep 2
 
     if registered_password != []
         registered_password = registered_password[0][0]
@@ -71,10 +78,9 @@ def checkpassword(password, username, db)
     end
 end
 
-# This broke again
 def check_register(username, password, confirm_password)
 
-    db = connect_to_db()
+    db = connect_to_db_hash()
 
     checkusername = checkusername(username, db) #checks that username is free
     
@@ -84,22 +90,17 @@ def check_register(username, password, confirm_password)
     if checkusername == [] && password == confirm_password #The name is not taken and the passwords match
         
         password_digest = BCrypt::Password.create(password)
-        p password_digest
 
         session[:username] = username
-        session[:log_in] = true
 
         register_user(username, password_digest, db)
 
         find_user_id(username, db)
 
-    else
-        if checkusername != [] #There is already a user by the same name
+    elsif checkusername != [] #There is already a user by the same name
             session[:error_reg_unik] = true
-        end
-        if password != confirm_password #Not matching passwords
+    elsif password != confirm_password #Not matching passwords
             session[:error_reg_password] = true
-        end
     end
     
 end
@@ -112,8 +113,5 @@ end
 def find_user_id(username, db)
     #Checks the id of the user and assigns it to the session
     id = db.execute("SELECT Id FROM users WHERE Username LIKE ?", username).first
-    p "find id check"
-    p id['Id']
     session[:id] = id['Id']
-    p session[:id]
 end

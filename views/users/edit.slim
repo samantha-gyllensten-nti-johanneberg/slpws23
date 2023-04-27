@@ -1,7 +1,7 @@
 / edit user information and delete account forms
 
 - if session[:password_checked] 
-    h1 Hi #{users['Username']}!
+    h1 Make changes to user: #{users['Username']}
     h2 Edit Information:
     form action="/users/#{users['Id']}/update" method="post" id="update"
         div.usernamewrapper
@@ -27,5 +27,3 @@
             label for="password" Password:  
             input#password1 type="password" name="password" placeholder="Password"  
         input type="submit" value="Check"
-
-h2 #{users['Id']}

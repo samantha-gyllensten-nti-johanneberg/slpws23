@@ -15,32 +15,16 @@ before do
     restricted_paths = ['/monsters', '/market', '/toys']
 
     for i in 0..restricted_paths.length-1
-        p "honesty"
+
         restricted_paths[i] = Regexp.new(restricted_paths[i])
-        p restricted_paths[i]
         match = /#{restricted_paths[i]}/.match(request.path_info)
-        p match
+
         if match && session[:log_in] != true || /\/users\/\d/.match(request.path_info) && session[:log_in] != true
             redirect('/')
         end
     end
 
 end
-
-def userresult(db)
-    id = session[:id]
-    userresult = db.execute("SELECT * FROM users WHERE Id = ?", id).first
-
-    return userresult
-end
-
-# helpers do
-
-#     def admin_check
-        
-#     end
-
-# end
 
 get('/') do
 
@@ -86,19 +70,6 @@ get('/users/:id') do
     end
 end
 
-get('/users/:id/edit') do
-    id = params[:id].to_i
-    db = connect_to_db_hash()
-
-    userresult = userresult(db)
-
-    if userresult['Id'] != id
-        userresult['Id'] = id
-    end
-
-    slim(:"users/edit", locals:{users:userresult})
-end
-
 post('/log_in') do
     username = params[:username]
     password = params[:password]
@@ -118,34 +89,71 @@ post('/register_user') do
 
     check_register(username, password, confirm_password)
 
-    redirect('/users/') #THIS NEEDS MOVING
+    if session[:error_reg_password] || session[:error_reg_unik]
+    redirect('/users/new')
+    else
+        redirect('/')
+    end
+end
+
+get('/users/:id/edit') do
+    id = params[:id].to_i
+    db = connect_to_db_hash()
+
+    userresult = userresult(db)
+    p "user edit"
+    p userresult
+
+    if userresult['Id'] != id
+        userresult = db.execute("SELECT * FROM users WHERE Id = ?", id).first
+    end
+
+    slim(:"users/edit", locals:{users:userresult})
 end
 
 post('/password_check/:id') do
     session[:password_checked_error] = false
     session[:password_checked] = false
+
+    db = connect_to_db_hash()
+
     # These might need to be placed elsewhere to make sure it doesnt permanently save
+    userresult = userresult(db)
 
     id = params[:id]
     password = params[:password]
     username = params[:username]
-    db = connect_to_db_hash
 
+    if userresult['Admin']
+        if username == userresult['Username']
 
-    user = db.execute("SELECT * FROM users WHERE Id = ?", id).first
+            check = checkpassword(password, username, db)
 
-    if username == user['Username']
-    
-        check = checkpassword(password, username, db)
-
-        # could this in theory be moved into the function?
-        if check
-            session[:password_checked] = true
+            if check
+                session[:password_checked] = true
+            else
+                session[:password_checked_error] = true
+            end
         else
             session[:password_checked_error] = true
         end
+
     else
-        session[:password_checked_error] = true
+        user = db.execute("SELECT * FROM users WHERE Id = ?", id).first
+
+        if username == user['Username']
+        
+            check = checkpassword(password, username, db)
+
+            # could this in theory be moved into the function?
+            if check
+                session[:password_checked] = true
+            else
+                session[:password_checked_error] = true
+            end
+        else
+            session[:password_checked_error] = true
+        end
     end
 
     # id = db.execute("SELECT Id FROM users WHERE id")
@@ -176,33 +184,28 @@ post('/users/:id/update') do
         db.execute("UPDATE users SET Password = ? WHERE Id = ?", password, id)
     end
 
-    redirect('/users/')
+    redirect('/')
 end
 
 # Monsters
 
 get('/monsters/') do
-    if session[:log_in]
-        id = session[:id]
-        db = connect_to_db_hash()
-        
-        userresult = userresult(db)
-        if userresult['Admin'] == "Admin"
-            result = db.execute("SELECT * FROM monsters")
-        else
-            result = db.execute("SELECT * FROM monsters WHERE UserId = ?", id)
-        end
-        slim(:"monsters/index", locals:{monsters:result, users:userresult})
+    id = session[:id]
+    db = connect_to_db_hash()
+    
+    userresult = userresult(db)
+    if userresult['Admin'] == "Admin"
+        result = db.execute("SELECT * FROM monsters")
     else
-        slim(:"index")
+        result = db.execute("SELECT * FROM monsters WHERE UserId = ?", id)
     end
+    slim(:"monsters/index", locals:{monsters:result, users:userresult})
 end
 
-# why does this code break if moved after :id???
 get('/monsters/new') do
     db = connect_to_db_hash()
     userresult = userresult(db)
-    result = db.execute("SELECT * FROM monstertypes")
+    result = db.execute("SELECT * FROM types")
 
     slim(:"monsters/new", locals:{users:userresult, types:result})
 end
@@ -214,7 +217,7 @@ get('/monsters/:id') do
     userresult = userresult(db)
     result = db.execute("SELECT * FROM monsters WHERE Id = ?", id).first
 
-    resulttype = db.execute("SELECT Type FROM monsters_monstertypes_rel INNER JOIN monstertypes ON monsters_monstertypes_rel.TypeId = monstertypes.Id WHERE MonsterId = ?", id)
+    resulttype = db.execute("SELECT Type FROM monsters_types_rel INNER JOIN types ON monsters_types_rel.TypeId = types.Id WHERE MonsterId = ?", id)
 
     # OBS!! Still needs a popup for feeding and code for that
     # Food needs to be added so that compatable foods can be viewed and fed to the pet
@@ -228,10 +231,10 @@ get('/monsters/:id/edit') do
     
     userresult = userresult(db)
     monsterresult = db.execute("SELECT * FROM monsters WHERE Id = ?", id).first
-    typeresult = db.execute("SELECT monsters_monstertypes_rel.TypeId, monstertypes.Type FROM monsters_monstertypes_rel INNER JOIN monsters ON monsters_monstertypes_rel.MonsterId = monsters.Id INNER JOIN monstertypes ON monsters_monstertypes_rel.TypeId = monstertypes.Id WHERE monsters.Id = ?", id)
-    alltypes = db.execute("SELECT * FROM monstertypes")
+    typeresult = db.execute("SELECT monsters_types_rel.TypeId, types.Type FROM monsters_types_rel INNER JOIN monsters ON monsters_types_rel.MonsterId = monsters.Id INNER JOIN types ON monsters_types_rel.TypeId = types.Id WHERE monsters.Id = ?", id)
+    alltypes = db.execute("SELECT * FROM types")
 
-    slim(:"monsters/edit", locals:{monsters:monsterresult, users:userresult, monstertypes:typeresult, alltypes:alltypes})
+    slim(:"monsters/edit", locals:{monsters:monsterresult, users:userresult, types:typeresult, alltypes:alltypes})
 end
 
 post('/monsters') do
@@ -254,13 +257,14 @@ post('/monsters') do
     db.execute("INSERT INTO monsters (Name, Age, Fed, UserId, Description) VALUES (?, ?, ?, ?, ?)", name, age, fed, userid, desc)
     id = db.execute("SELECT last_insert_rowid()")
     id = id[0]["last_insert_rowid()"]
-    db.execute("INSERT INTO monsters_monstertypes_rel (TypeId, MonsterId) VALUES (?, ?)", type1, id)
-    db.execute("INSERT INTO monsters_monstertypes_rel (TypeId, MonsterId) VALUES (?, ?)", type2, id)
+    db.execute("INSERT INTO monsters_types_rel (TypeId, MonsterId) VALUES (?, ?)", type1, id)
+    db.execute("INSERT INTO monsters_types_rel (TypeId, MonsterId) VALUES (?, ?)", type2, id)
 
     redirect('/monsters/')
 end
 
 post('/monsters/:id/update') do
+    session[:type_match] = false
     # check user owns pets
     # check if user is admin
     id = params[:id]
@@ -272,13 +276,12 @@ post('/monsters/:id/update') do
     userid = params[:id]
     type1 = params[:type1]
     type2 = params[:type2]
-    p "updates type"
-    p type1
-    p type2
-    previous_types = db.execute("SELECT TypeId FROM monsters_monstertypes_rel WHERE MonsterId = ?", id)
-    p previous_types
-    p previous_types[0]['TypeId']
-    p previous_types[1]['TypeId']
+    previous_types = db.execute("SELECT TypeId FROM monsters_types_rel WHERE MonsterId = ?", id)
+
+    if type1 == type2
+        session[:type_match] = true
+        redirect("/monsters/#{id}/edit")
+    end
 
     if params[:name] != ""
         db.execute("UPDATE monsters SET Name = ? WHERE Id = ?", name, id)
@@ -293,45 +296,42 @@ post('/monsters/:id/update') do
         db.execute("UPDATE monsters SET UserId = ? WHERE Id = ?", userid, id)
     end
     if params[:type1] != "" 
-        db.execute("UPDATE monsters_monstertypes_rel SET TypeId = ? WHERE MonsterId = ? AND TypeId = ?", type1, id, previous_types[0]['TypeId'])
+        db.execute("UPDATE monsters_types_rel SET TypeId = ? WHERE MonsterId = ? AND TypeId = ?", type1, id, previous_types[0]['TypeId'])
     end
     if  params[:type2] != ""
-        db.execute("UPDATE monsters_monstertypes_rel SET TypeId = ? WHERE MonsterId = ? AND TypeId = ?", type2, id, previous_types[1]['TypeId'])
+        db.execute("UPDATE monsters_types_rel SET TypeId = ? WHERE MonsterId = ? AND TypeId = ?", type2, id, previous_types[1]['TypeId'])
     end
 
-    redirect('/monsters/')
+    redirect("/monsters/")
 end
 
-post('/monsters/:id/update') do
+post('/monsters/:id/delete') do
     # delete stuff
 end
 
 # Foods
 
 get('/foods/') do
-    if session[:log_in]
-        id = session[:id]
-        db = connect_to_db_hash()
-        
-        userresult = userresult(db)
-        if userresult['Admin'] == "Admin"
-            result = db.execute("SELECT * FROM foods")
-            p result
-            p "Lookie"
-        else
-            result = db.execute("SELECT * FROM foods WHERE UserId = ?", id)
-        end
-        slim(:"foods/index", locals:{foods:result, users:userresult})
+    session[:type_match] = false
+    
+    id = session[:id]
+    db = connect_to_db_hash()
+    
+    userresult = userresult(db)
+    if userresult['Admin'] == "Admin"
+        result = db.execute("SELECT * FROM foods")
     else
-        slim(:"foods/index")
+        result = db.execute("SELECT * FROM users_foods_rel INNER JOIN foods ON foods.Id = users_foods_rel.FoodId WHERE UserId = ?", id)
     end
+    slim(:"foods/index", locals:{foods:result, users:userresult})
 end
 
 get('/foods/new') do
     db = connect_to_db_hash()
     userresult = userresult(db)
+    alltypes = db.execute("SELECT * FROM types")
 
-    slim(:"foods/new", locals:{users:userresult})
+    slim(:"foods/new", locals:{users:userresult, alltypes:alltypes})
 end
 
 get('/foods/:id') do
@@ -340,8 +340,9 @@ get('/foods/:id') do
     
     userresult = userresult(db)
     result = db.execute("SELECT * FROM foods WHERE Id = ?", id).first
+    resulttype = db.execute("SELECT Type FROM foods_types_rel INNER JOIN types ON foods_types_rel.TypeId = types.Id WHERE FoodId = ?", id)
 
-    slim(:"foods/show", locals:{foods:result, users:userresult})
+    slim(:"foods/show", locals:{foods:result, users:userresult, types:resulttype})
 end
 
 get('/foods/:id/edit') do
@@ -349,19 +350,36 @@ get('/foods/:id/edit') do
     db = connect_to_db_hash()
     
     userresult = userresult(db)
-    result = db.execute("SELECT * FROM foods WHERE Id = ?", id).first
+    foodresult = db.execute("SELECT * FROM foods WHERE Id = ?", id).first
+    typeresult = db.execute("SELECT foods_types_rel.TypeId, types.Type FROM foods_types_rel INNER JOIN foods ON foods_types_rel.FoodId = foods.Id INNER JOIN types ON foods_types_rel.TypeId = types.Id WHERE foods.Id = ?", id)
+    alltypes = db.execute("SELECT * FROM types")
 
-    slim(:"foods/edit", locals:{foods:result, users:userresult})
+    slim(:"foods/edit", locals:{foods:foodresult, users:userresult, types:typeresult, alltypes:alltypes})
 end
 
 post('/foods') do
+    session[:type_match] = false
+
     name = params[:name]
     desc = params[:desc]
-    # type1 = params[:type1]
-    # type2 = params[:type2]
+    type1 = params[:type1]
+    type2 = params[:type2]
+    type3 = params[:type3]
 
-    db = connect_to_db_hash
-    db.execute("INSERT INTO foods (Name, Description) VALUES (?, ?)", name, desc)
+    if type1 != type2 && type1 != type3 && type2 != type3 
+
+        db = connect_to_db_hash
+        db.execute("INSERT INTO foods (Name, Description) VALUES (?, ?)", name, desc)
+
+        id = db.execute("SELECT last_insert_rowid()")
+        id = id[0]["last_insert_rowid()"]
+        db.execute("INSERT INTO foods_types_rel (TypeId, FoodId) VALUES (?, ?)", type1, id)
+        db.execute("INSERT INTO foods_types_rel (TypeId, FoodId) VALUES (?, ?)", type2, id)
+        db.execute("INSERT INTO foods_types_rel (TypeId, FoodId) VALUES (?, ?)", type3, id)
+    else
+        session[:type_match] = true
+        redirect('/foods/new')
+    end
 
     redirect('/foods/')
 end
@@ -369,16 +387,37 @@ end
 post('/foods/:id/update') do
     id = params[:id]
     db = connect_to_db_hash
+    session[:type_match] = false
 
     name = params[:name]
     desc = params[:desc]
+    type1 = params[:type1]
+    type2 = params[:type2]
+    type3 = params[:type3]
 
-    if params[:name] != ""
-        db.execute("UPDATE foods SET Name = ? WHERE Id = ?", name, id)
+    previous_types = db.execute("SELECT TypeId FROM foods_types_rel WHERE FoodId = ?", id)
+
+    if type1 == type2 || type1 == type3 || type2 == type3
+        session[:type_match] = true
+        redirect("/foods/#{id}/edit")
+    else
+        if params[:name] != ""
+            db.execute("UPDATE foods SET Name = ? WHERE Id = ?", name, id)
+        end
+        if params[:desc] != ""
+            db.execute("UPDATE foods SET Description = ? WHERE Id = ?", desc, id)
+        end
+        if  params[:type1] != ""
+            db.execute("UPDATE foods_types_rel SET TypeId = ? WHERE FoodId = ? AND TypeId = ?", type1, id, previous_types[0]['TypeId'])
+        end
+        if  params[:type2] != ""
+            db.execute("UPDATE foods_types_rel SET TypeId = ? WHERE FoodId = ? AND TypeId = ?", type2, id, previous_types[1]['TypeId'])
+        end
+        if  params[:type3] != ""
+            db.execute("UPDATE foods_types_rel SET TypeId = ? WHERE FoodId = ? AND TypeId = ?", type3, id, previous_types[2]['TypeId'])
+        end
     end
-    if params[:desc] != ""
-        db.execute("UPDATE foods SET Description = ? WHERE Id = ?", desc, id)
-    end
+
 
     redirect('/foods/')
 end
@@ -386,37 +425,34 @@ end
 # Toys
 
 get('/toys/') do
-    if session[:log_in]
-        id = session[:id]
-        db = connect_to_db_hash()
-        
-        userresult = userresult(db)
-        if userresult['Admin'] == "Admin"
-            result = db.execute("SELECT * FROM toys")
-            p result
-            p "Lookie"
-        else
-            result = db.execute("SELECT * FROM toys WHERE UserId = ?", id)
-        end
-        slim(:"toys/index", locals:{toys:result, users:userresult})
+    id = session[:id]
+    db = connect_to_db_hash()
+    
+    userresult = userresult(db)
+    if userresult['Admin'] == "Admin"
+        result = db.execute("SELECT * FROM toys")
     else
-        slim(:"toys/index")
+        result = db.execute("SELECT * FROM toys WHERE UserId = ?", id)
     end
+    slim(:"toys/index", locals:{toys:result, users:userresult})
 end
 
 get('/toys/new') do
     db = connect_to_db_hash()
     userresult = userresult(db)
 
-    slim(:"toys/new", locals:{users:userresult})
+    userresult = userresult(db)
+    alltypes = db.execute("SELECT * FROM types")
+
+    slim(:"toys/new", locals:{users:userresult, alltypes:alltypes})
 end
 
 get('/toys/:id') do
     id = params[:id].to_i
     db = connect_to_db_hash()
-    
+
     userresult = userresult(db)
-    result = db.execute("SELECT * FROM toys WHERE Id = ?", id).first
+    result = db.execute("SELECT toys.Id, toys.Name, toys.Description, types.Type FROM toys INNER JOIN types ON types.Id = toys.TypeId WHERE toys.Id = ?", id).first
 
     slim(:"toys/show", locals:{toys:result, users:userresult})
 end
@@ -426,9 +462,10 @@ get('/toys/:id/edit') do
     db = connect_to_db_hash()
     
     userresult = userresult(db)
-    result = db.execute("SELECT * FROM toys WHERE Id = ?", id).first
+    toysresult = db.execute("SELECT * FROM toys INNER JOIN types ON types.Id = toys.TypeId WHERE toys.Id = ?", id).first
+    alltypes = db.execute("SELECT * FROM types")
 
-    slim(:"toys/edit", locals:{toys:result, users:userresult})
+    slim(:"toys/edit", locals:{toys:toysresult, users:userresult, alltypes:alltypes})
 end
 
 post('/toys') do
@@ -437,7 +474,7 @@ post('/toys') do
     type = params[:type]
 
     db = connect_to_db_hash
-    db.execute("INSERT INTO toys (Name, Description, AnimalType) VALUES (?, ?, ?)", name, desc, type)
+    db.execute("INSERT INTO toys (Name, Description, TypeId) VALUES (?, ?, ?)", name, desc, type)
 
     redirect('/toys/')
 end
@@ -454,7 +491,7 @@ post('/toys/:id/update') do
     elsif params[:desc] != ""
         db.execute("UPDATE toys SET Descrpition = ? WHERE Id = ?", desc, id)
     elsif params[:type] != ""
-        db.execute("UPDATE toys SET AnimalType = ? WHERE Id = ?", type, id)
+        db.execute("UPDATE toys SET TypeId = ? WHERE Id = ?", type, id)
     end
 
     redirect('/toys/')

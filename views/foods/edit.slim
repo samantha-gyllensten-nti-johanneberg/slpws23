@@ -1,3 +1,6 @@
+- if session[:type_match]
+    p You have entered repeated types
+
 div.edit_entry
     h2 #{foods['Name']}
 
@@ -14,5 +17,23 @@ div.edit_entry
 
             label for="desc" Description?
             input#weight type="text" name="desc" min="0" placeholder="#{foods['Description']}"
+
+            label for="type1" Type 1:
+            select#type1 name="type1" 
+                option selected="" value="#{types[0]['TypeId']}" #{types[0]['Type']} 
+                - alltypes.each do |type| 
+                    option value="#{type['Id']}" #{type['Type']} 
+
+            label for="type2" Type 2:
+            select#type2 name="type2" 
+                option selected="" value="#{types[1]['TypeId']}" #{types[1]['Type']} 
+                - alltypes.each do |type| 
+                    option value="#{type['Id']}" #{type['Type']}
+
+            label for="type3" Type 3:
+            select#type3 name="type3" 
+                option selected="" value="#{types[2]['TypeId']}" #{types[2]['Type']} 
+                - alltypes.each do |type| 
+                    option value="#{type['Id']}" #{type['Type']}  
 
             input type="submit" value="Update"

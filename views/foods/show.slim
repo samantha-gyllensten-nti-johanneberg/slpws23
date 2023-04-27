@@ -6,6 +6,9 @@ div#foodinfo
     / img src="#{monsters['ImageLink']}" alt=""/
     / p Types:
     p #{foods['Description']}
+    h3 Types:
+    - types.each do |type|
+        p #{type['Type']}
 
     - if users['Admin'] == "Admin" 
         div.editbutton 

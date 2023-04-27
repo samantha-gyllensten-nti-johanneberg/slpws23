@@ -1,3 +1,6 @@
+- if session[:type_match]
+    p You have entered the same type twice
+
 div.edit_entry
     h2 #{monsters['Name']}
 
@@ -24,13 +27,13 @@ div.edit_entry
 
                 label for="type1" Type 1:
                 select#type1 name="type1" 
-                    option selected="" value="#{monstertypes[0]['TypeId']}" #{monstertypes[0]['Type']} 
+                    option selected="" value="#{types[0]['TypeId']}" #{types[0]['Type']} 
                     - alltypes.each do |type| 
                         option value="#{type['Id']}" #{type['Type']} 
 
                 label for="type2" Type 2:
                 select#type2 name="type2" 
-                    option selected="" value="#{monstertypes[1]['TypeId']}" #{monstertypes[1]['Type']} 
+                    option selected="" value="#{types[1]['TypeId']}" #{types[1]['Type']} 
                     - alltypes.each do |type| 
                         option value="#{type['Id']}" #{type['Type']} 
 
