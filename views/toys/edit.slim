@@ -1,27 +1,35 @@
 - if users['Admin'] == "Admin"
     div.edit_entry
-        h2 #{toys['Name']}
 
-        div.editwrapper
-            div.exit
-                    a href="/toys/#{toys['Id']}" Exit
-            form action="/toys/#{toys['Id']}/delete" method="post"
-                    input type="submit" Value="Delete"
-
+        div.exit
+            a href="/toys/#{toys['Id']}" Exit
+        
         div.information
+
+            h1 #{toys['Name']}
+
             form action="/toys/#{toys['Id']}/update" method="post"
                 label for="name" Update Toy's Name?
+                br
                 input#name type="text" name="name" placeholder="#{toys['Name']}"
 
                 label for="desc" Toy's Description?
-                input#name type="text" name="desc" placeholder="#{toys['Description']}"
+                br
+                textarea#name type="text" maxlength="500" name="desc" placeholder="#{toys['Description']}"
 
-                label for="type" Type:
-                select#type name="type" 
-                    option selected="" value="#{toys['TypeId']}" #{toys['Type']}
-                    - alltypes.each do |type| 
-                        option value="#{type['Id']}" #{type['Type']}
+                div.types_select_toys
+                    div.type_select
+                        label for="type" Type:
+                        select#type name="type" 
+                            option selected="" value="#{toys['TypeId']}" #{toys['Type']}
+                            - alltypes.each do |type| 
+                                option value="#{type['Id']}" #{type['Type']}
+                br
 
                 input type="submit" value="Update"
+                 div.delete
+                    form action="/toys/#{toys['Id']}/delete" method="post"
+                        input type="submit" Value="Delete"
+
 
 / there needs to be a version for just selling the pet itself and changing owners

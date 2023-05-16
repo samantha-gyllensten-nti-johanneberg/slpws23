@@ -2,42 +2,56 @@
     p You have entered the same type twice
 
 div.edit_entry
-    h2 #{monsters['Name']}
 
-    div.editwrapper
-        div.exit
-                a href="/monsters/#{monsters['Id']}" Exit
-        form action="/monsters/#{monsters['Id']}/delete" method="post"
-                input type="submit" Value="Delete"
+    div.exit
+            a href="/monsters/#{monsters['Id']}" Exit
 
     div.information
+
+        h1 #{monsters['Name']}
+
         form action="/monsters/#{monsters['Id']}/update" method="post"
             label for="name" Update Pet's Name?
+            br
             input#name type="text" name="name" placeholder="#{monsters['Name']}"
+            br
 
             - if users['Admin'] == "Admin"
                 label for="age" Age?
+                br
                 input#weight type="number" name="age" min="0" placeholder="#{monsters['Age']}"
+                br
 
                 label for="desc" Pet's Description?
-                input#name type="text" name="desc" placeholder="#{monsters['Description']}"
+                br
+                textarea#name type="text" maxlength="500" name="desc" placeholder="#{monsters['Description']}"
+                br
 
                 label for="userid" User (Id number)?
+                br
                 input#weight type="number" name="userid" min="0" placeholder="#{monsters['UserId']}"
+                / does changing weight break any code????
+                br
+                
+                div.types_select_monsters
+                    div.type_select
+                        label for="type1" Type 1:
+                        select#type1 name="type1" 
+                            option selected="" value="#{types[0]['TypeId']}" #{types[0]['Type']} 
+                            - alltypes.each do |type| 
+                                option value="#{type['Id']}" #{type['Type']} 
 
-                label for="type1" Type 1:
-                select#type1 name="type1" 
-                    option selected="" value="#{types[0]['TypeId']}" #{types[0]['Type']} 
-                    - alltypes.each do |type| 
-                        option value="#{type['Id']}" #{type['Type']} 
-
-                label for="type2" Type 2:
-                select#type2 name="type2" 
-                    option selected="" value="#{types[1]['TypeId']}" #{types[1]['Type']} 
-                    - alltypes.each do |type| 
-                        option value="#{type['Id']}" #{type['Type']} 
+                    div.type_select
+                        label for="type2" Type 2:
+                        select#type2 name="type2" 
+                            option selected="" value="#{types[1]['TypeId']}" #{types[1]['Type']} 
+                            - alltypes.each do |type| 
+                                option value="#{type['Id']}" #{type['Type']} 
 
             input type="submit" value="Update"
+            div.delete
+                form action="/monsters/#{monsters['Id']}/delete" method="post"
+                    input type="submit" Value="Delete"
 
 / there needs to be a version for just selling the pet itself and changing owners
             

@@ -6,29 +6,29 @@
 }
 
 a {
-    color: rgb(165, 121, 55);
+    color: rgb(125, 74, 38);
     padding-bottom: 7px;
     padding-top: 7px;
 }
 
 h1 {
-    color: rgb(165, 121, 55);
+    color: rgb(125, 74, 38);
     text-decoration: underline;
     padding-bottom: 20px;
     padding-top: 20px;
 }
 h3 {
-    color: rgb(165, 121, 55);
+    color: rgb(125, 74, 38);
     padding-bottom: 7px;
     padding-top: 7px;
 }
 h2 {
-    color: rgb(165, 121, 55);
+    color: rgb(125, 74, 38);
     padding-bottom: 15px;
     padding-top: 15px;
 }
 p {
-    color: brown;
+    color: rgb(165, 121, 55);
     padding-top: 4px;
     padding-bottom: 4px;
 }
@@ -194,4 +194,229 @@ main {
     background-color: bisque;
     padding: 15px;
     /* padding: 10px; */
+}
+
+.entry {
+    background-color: rgb(165, 121, 55, 0.2);
+    margin-bottom: 10px;
+    border-radius: 15px;
+    padding-left: 20px;
+    padding-bottom: 20px;
+    border: 2px solid rgb(165, 121, 55);
+}
+
+.entry h2 {
+    padding-left: 2px;
+}
+
+.infobutton {
+    width: fit-content;
+    padding: 0px 5px 0px 5px;
+    border-radius: 15px;
+    background-color: rgb(125, 74, 38);
+}
+
+.infobutton a {
+    text-decoration: none;
+}
+
+.infobutton p {
+    color: bisque;
+}
+
+.infobutton:hover {
+    background-color: rgb(212, 161, 85);
+}
+
+.infobutton:hover p {
+ color: rgb(125, 74, 38);
+}
+
+.information {
+    color: rgb(165, 121, 55);
+    background: rgb(165, 121, 55, 0.2);
+    border: rgb(165, 121, 55) 2px solid;
+    border-radius: 15px;
+}
+
+form {
+    color: rgb(125, 74, 38);
+}
+
+.exit {
+    color: bisque;
+    background-color: rgb(125, 74, 38);
+    border-radius: 10%;
+    border: 2px solid rgb(125, 74, 38);
+    padding: 2px;
+    /* margin-top: 5px; */
+    /* margin-bottom: 5px; */
+    width: 40px;
+    height: 25px;
+    text-align: center;
+}
+
+.exit a {
+    color: bisque;
+    text-decoration: none;
+}
+
+.exit:hover {
+    background-color: rgb(165, 121, 55, 0.2);
+    text-decoration: none;
+    text-align: center;
+}
+
+.exit:hover a {
+    color: rgb(125, 74, 38);
+}
+
+.information {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.information form {
+    width: 95%;
+    height: fit-content;
+    padding: 5px;
+}
+
+.information input[type=text] {
+    width: 100%;
+    margin: 3px;
+    background-color: bisque;
+    border: 2px solid rgb(125, 74, 38);
+    border-radius: 10px;
+    padding: 10px;
+}
+
+textarea::placeholder {
+    color: rgb(125, 74, 38);
+}
+
+input::placeholder {
+    color: rgb(125, 74, 38);
+}
+
+input {
+    color: rgb(125, 74, 38);
+}
+
+textarea {
+    color: rgb(125, 74, 38);
+}
+
+.information textarea {
+    width: 100%;
+    height: 150px;
+    margin: 3px;
+    background-color: bisque;
+    border: 2px solid rgb(125, 74, 38);
+    border-radius: 10px;
+    padding: 10px
+}
+
+.type_select select {
+    background-color: bisque;
+    border: 2px solid rgb(125, 74, 38);
+    border-radius: 5px;
+    padding: 2px;
+    color: rgb(125, 74, 38);
+    margin-bottom: 5px;
+}
+
+.information form label {
+    margin: 3px;
+}
+
+.information input[type="number"] {
+    width: 10%;
+    margin: 3px;
+    background-color: bisque;
+    border: 2px solid rgb(125, 74, 38);
+    border-radius: 10px;
+    padding: 10px
+}
+
+.types_select_foods {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.types_select_monsters {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-top: 5px;
+}
+
+.types_select_toys {
+    margin-top: 5px;
+}
+
+.information input[type="submit"] {
+    margin: 8px;
+    color: bisque;
+    background-color: rgb(125, 74, 38);
+    border: 2px solid bisque;
+    border-radius: 5px;
+    padding: 3px;
+    width: 60px;
+}
+
+.information input[type="submit"]:hover {
+    color: rgb(125, 74, 38);
+    background-color: bisque;
+    border: 2px solid rgb(125, 74, 38);
+}
+
+.delete input[type=submit] {
+    color: bisque;
+    background-color: rgb(125, 74, 38);
+    border: 2px solid bisque;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    width: 60px;
+}
+.delete input[type=submit]:hover {
+    color: rgb(125, 74, 38);
+    background-color: bisque;
+    border: 2px solid rgb(125, 74, 38);
+}
+
+#monsterinfo {
+    background-color: rgb(165, 121, 55, 0.2);
+    margin-bottom: 10px;
+    margin-top: 10px;
+    border-radius: 15px;
+    padding-left: 20px;
+    padding-bottom: 20px;
+    border: 2px solid rgb(165, 121, 55);
+}
+
+#foodinfo {
+    background-color: rgb(165, 121, 55, 0.2);
+    margin-bottom: 10px;
+    margin-top: 10px;
+    border-radius: 15px;
+    padding-left: 20px;
+    padding-bottom: 20px;
+    border: 2px solid rgb(165, 121, 55);
+}
+
+#toyinfo {
+    background-color: rgb(165, 121, 55, 0.2);
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-radius: 15px;
+    padding-left: 20px;
+    padding-bottom: 20px;
+    border: 2px solid rgb(165, 121, 55);
 }

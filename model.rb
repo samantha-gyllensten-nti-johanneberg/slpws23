@@ -1,10 +1,17 @@
 #relevant functions
+require 'sinatra'
+require 'slim'
+require 'sinatra/reloader'
+# require 'sinatra/flash'
+require 'sqlite3'
 require 'bcrypt'
 enable :sessions
 
-def userresult(db)
+def userresult()
     id = session[:id]
-    userresult = db.execute("SELECT * FROM users WHERE Id = ?", id).first
+    p "db check"
+    p $db
+    userresult = $db.execute("SELECT * FROM users WHERE Id = ?", id).first
 
     return userresult
 end
@@ -16,13 +23,11 @@ def check_login(username, password)
     session[:error_log_in] = false
     checkpassword = false
 
-    db = connect_to_db_hash()
-
     #Compares username and password to already existing accounts
-    checkusername = checkusername(username, db)
+    checkusername = checkusername(username)
 
     if checkusername != [] #The username exists
-        checkpassword = checkpassword(password, username, db) #sees if password is the same as registered to username
+        checkpassword = checkpassword(password, username) #sees if password is the same as registered to username
     else
         #The username does not exist, error
         session[:error_log_in] = true
@@ -35,19 +40,13 @@ def check_login(username, password)
         redirect('/users/')
     else
         # Logs user in
-        session[:username] = username
         session[:log_in] = true
 
-        id = find_user_id(username, db)
+        id = find_user_id(username)
 
         redirect('/')
     end
 
-end
-
-def connect_to_db()
-    db = SQLite3::Database.new("db/multipets.db")
-    # db.results_as_hash = true #is this necessary?
 end
 
 def connect_to_db_hash()
@@ -56,16 +55,15 @@ def connect_to_db_hash()
     return db
 end
 
-def checkusername(username, db)
+def checkusername(username)
     username = username
-    checkuser = db.execute("SELECT * FROM users WHERE Username = ?", username)
+    checkuser = $db.execute("SELECT * FROM users WHERE Username = ?", username)
 
     return checkuser
 end
 
-def checkpassword(password, username, db)
-    registered_password = db.execute("SELECT Password FROM users WHERE Username = ?", username)
-    # sleep 2
+def checkpassword(password, username)
+    registered_password = $db.execute("SELECT Password FROM users WHERE Username = ?", username)
 
     if registered_password != []
         registered_password = registered_password[0][0]
@@ -80,9 +78,7 @@ end
 
 def check_register(username, password, confirm_password)
 
-    db = connect_to_db_hash()
-
-    checkusername = checkusername(username, db) #checks that username is free
+    checkusername = checkusername(username) #checks that username is free
     
     session[:error_reg_unik] = false
     session[:error_reg_password] = false
@@ -91,11 +87,9 @@ def check_register(username, password, confirm_password)
         
         password_digest = BCrypt::Password.create(password)
 
-        session[:username] = username
+        register_user(username, password_digest)
 
-        register_user(username, password_digest, db)
-
-        find_user_id(username, db)
+        find_user_id(username)
 
     elsif checkusername != [] #There is already a user by the same name
             session[:error_reg_unik] = true
@@ -105,13 +99,26 @@ def check_register(username, password, confirm_password)
     
 end
 
-def register_user(username, password, db)
+def register_user(username, password)
     #lägg till kontot i konto tabellen
-    db.execute("INSERT INTO users (Username, Password) VALUES (?, ?)", username, password)
+    $db.execute("INSERT INTO users (Username, Password) VALUES (?, ?)", username, password)
 end
 
-def find_user_id(username, db)
+def find_user_id(username)
     #Checks the id of the user and assigns it to the session
-    id = db.execute("SELECT Id FROM users WHERE Username LIKE ?", username).first
+    id = $db.execute("SELECT Id FROM users WHERE Username LIKE ?", username).first
     session[:id] = id['Id']
 end
+
+# def update_user(username, password)
+#     db = connect_to_db_hash
+
+#     if username != nil
+#         db.execute("UPDATE users SET Username = ? WHERE Id = ?", username, id)
+#     end
+
+#     if password != ""
+#         password = BCrypt::Password.create(password)
+#         db.execute("UPDATE users SET Password = ? WHERE Id = ?", password, id)
+#     end
+# end

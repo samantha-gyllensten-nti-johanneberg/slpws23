@@ -22,8 +22,9 @@ div#otheruserswrapper
                         div.userinfo
                             a href="/users/#{user['Id']}/edit" 
                                 p edit
-                            a href="delete" 
-                                p delete
+                            div.delete
+                                form action="/users/#{user['Id']}/delete" method="post"
+                                    input type="submit" Value="Delete"
 
         h1 Admins:
         ul
@@ -35,5 +36,6 @@ div#otheruserswrapper
                         div.userinfo
                             a href="/users/#{user['Id']}/edit" 
                                 p edit
-                            a href="delete" 
-                                p delete
+                            div.delete
+                                form action="/users/#{user['Id']}/delete" method="post"
+                                    input type="submit" Value="Delete"

@@ -2,38 +2,49 @@
     p You have entered repeated types
 
 div.edit_entry
-    h2 #{foods['Name']}
 
-    div.editwrapper
-        div.exit
-                a href="/foods/#{foods['Id']}" Exit
-        form action="/foods/#{foods['Id']}/delete" method="post"
-                input type="submit" Value="Delete"
+    div.exit
+            a href="/foods/#{foods['Id']}" Exit
 
     div.information
+
+        h1 #{foods['Name']}
+        br
+
         form action="/foods/#{foods['Id']}/update" method="post"
             label for="name" Update Food's Name?
+            br
             input#name type="text" name="name" placeholder="#{foods['Name']}"
+            br
 
             label for="desc" Description?
-            input#weight type="text" name="desc" min="0" placeholder="#{foods['Description']}"
+            br
+            textarea#weight type="text" maxlength="500" wrap="soft" name="desc" min="0" placeholder="#{foods['Description']}"
+            br
 
-            label for="type1" Type 1:
-            select#type1 name="type1" 
-                option selected="" value="#{types[0]['TypeId']}" #{types[0]['Type']} 
-                - alltypes.each do |type| 
-                    option value="#{type['Id']}" #{type['Type']} 
-
-            label for="type2" Type 2:
-            select#type2 name="type2" 
-                option selected="" value="#{types[1]['TypeId']}" #{types[1]['Type']} 
-                - alltypes.each do |type| 
-                    option value="#{type['Id']}" #{type['Type']}
-
-            label for="type3" Type 3:
-            select#type3 name="type3" 
-                option selected="" value="#{types[2]['TypeId']}" #{types[2]['Type']} 
-                - alltypes.each do |type| 
-                    option value="#{type['Id']}" #{type['Type']}  
+            div.types_select_foods
+                div.type_select
+                    label for="type1" Type 1:
+                    select#type1 name="type1" 
+                        option selected="" value="#{types[0]['TypeId']}" #{types[0]['Type']} 
+                        - alltypes.each do |type| 
+                            option value="#{type['Id']}" #{type['Type']} 
+                div.type_select
+                    label for="type2" Type 2:
+                    select#type2 name="type2" 
+                        option selected="" value="#{types[1]['TypeId']}" #{types[1]['Type']} 
+                        - alltypes.each do |type| 
+                            option value="#{type['Id']}" #{type['Type']}
+                div.type_select
+                    label for="type3" Type 3:
+                    select#type3 name="type3" 
+                        option selected="" value="#{types[2]['TypeId']}" #{types[2]['Type']} 
+                        - alltypes.each do |type| 
+                            option value="#{type['Id']}" #{type['Type']}  
 
             input type="submit" value="Update"
+            div.delete                
+                form action="/foods/#{foods['Id']}/delete" method="post"
+                    input type="submit" Value="Delete"
+
+
