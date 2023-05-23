@@ -10,6 +10,8 @@
 - else
     - if session[:error_log_in]
         p Wrong username or password!
+    - if session[:too_may_attempts]
+        p Too many attempts! Wait a few minutes!
 
     div.loginform
         form action="/log_in" method="post" id="login"

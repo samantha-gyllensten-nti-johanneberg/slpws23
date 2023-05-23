@@ -5,6 +5,10 @@ div#foodinfo
     h1 #{foods['Name']}
     / img src="#{monsters['ImageLink']}" alt=""/
     / p Types:
+    - if users['Admin']
+        p Total Amount: #{foods['MarketAmount']}
+    - else
+        p Amount: #{foods['FoodAmount']}
     p #{foods['Description']}
     h3 Types:
     - types.each do |type|

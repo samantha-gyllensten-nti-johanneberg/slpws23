@@ -3,8 +3,7 @@ div.exit
 
 div#monsterinfo
     h1 #{monsters['Name']}
-    / img src="#{monsters['ImageLink']}" alt=""/
-    / p Types:
+    / img src="#{monsters['ImageLink']}" alt="Photo of pet"/
     p Age: #{monsters['Age']}
     p #{monsters['Description']}
     h3 Types:
@@ -14,8 +13,6 @@ div#monsterinfo
     div.editbutton 
         a href="/monsters/#{monsters['Id']}/edit" 
             p Edit
-    div.editbutton 
-        a href="/monsters/#{monsters['Id']}/edit" 
-            p Sell
-            / There needs to be a way to check if the sell button was pressed, check through presentations
-            / ALso this code isnt working for some reason lol
+    div.sell
+        form action="/monsters/#{monsters['Id']}/sell" method="post"
+            input type="submit" Value="Sell"

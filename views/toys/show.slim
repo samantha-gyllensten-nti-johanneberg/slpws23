@@ -6,9 +6,13 @@ div#toyinfo
     / img src="#{monsters['ImageLink']}" alt=""/
     / p Types:
     p #{toys['Description']}
-    P Works with #{toys['Type']} type pets!
+    p Works with #{toys['Type']} type pets!
 
     - if users['Admin'] == "Admin"
         div.editbutton 
             a href="/toys/#{toys['Id']}/edit" 
                 p Edit
+    - else
+        div.sell
+            form action="/toys/#{toys['Id']}/sell" method="post"
+                input type="submit" Value="Sell"

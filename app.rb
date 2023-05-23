@@ -2,18 +2,21 @@
 require 'sinatra'
 require 'slim'
 require 'sinatra/reloader'
-# require 'sinatra/flash'
 require 'sqlite3'
 require 'bcrypt'
 require_relative 'model'
 
 enable :sessions
 
+# Have to be in app.rb
 $db = connect_to_db_hash()
+# Required for CASCADE SQL functions
 $db.execute("PRAGMA foreign_keys = ON")
 
 # use before blocks to check if admin, and if logged in (if not, make sure to reroute to index to avoid error messages)
 before do
+    
+    userresult = userresult()
 
     restricted_paths = ['/monsters', '/market', '/toys', '/foods']
 
@@ -26,11 +29,6 @@ before do
             redirect('/')
         end
     end
-
-end
-
-before do
-    userresult = userresult()
 end
 
 get('/') do
@@ -61,7 +59,7 @@ get('/users/:id') do
     id = params[:id].to_i
 
     if userresult['Admin'] == "Admin"
-        result = result = $db.execute("SELECT Id, Username, Admin FROM users")
+        result = all_users()
         slim(:"users/show", locals:{users:userresult, userlist:result})
     else
         slim(:"users/show", locals:{users:userresult})
@@ -98,7 +96,7 @@ get('/users/:id/edit') do
     id = params[:id].to_i
 
     if userresult['Id'] != id
-        userresult = $db.execute("SELECT * FROM users WHERE Id = ?", id).first
+        userresult = user(id)
     end
 
     slim(:"users/edit", locals:{users:userresult})
@@ -107,8 +105,6 @@ end
 post('/password_check/:id') do
     session[:password_checked_error] = false
     session[:password_checked] = false
-
-    # These might need to be placed elsewhere to make sure it doesnt permanently save
 
     id = params[:id]
     password = params[:password]
@@ -129,7 +125,7 @@ post('/password_check/:id') do
         end
 
     else
-        user = $db.execute("SELECT * FROM users WHERE Id = ?", id).first
+        user = user(id)
 
         if username == user['Username']
         
@@ -146,7 +142,6 @@ post('/password_check/:id') do
         end
     end
 
-    # id = db.execute("SELECT Id FROM users WHERE id")
     redirect("/users/#{id}/edit")
 
 end
@@ -158,11 +153,10 @@ post('/users/:id/update') do
     password = params[:password]
 
         if username != ""
-            $db.execute("UPDATE users SET Username = ? WHERE Id = ?", username, id)
+            username_update(username, id)
         end
         if password != ""
-            password = BCrypt::Password.create(password)
-            $db.execute("UPDATE users SET Password = ? WHERE Id = ?", password, id)
+            password_update(password, id)
         end
     
     redirect('/')
@@ -170,10 +164,7 @@ end
 
 post('/users/:id/delete') do
     id = params[:id]
-
-    p "carrots"
-    p $db.execute("SELECT * FROM users WHERE id = ?", id)
-    $db.execute("DELETE FROM users WHERE id = ?", id)
+    delete_user(id)
     redirect('/')
 end
 
@@ -183,15 +174,16 @@ get('/monsters/') do
     id = session[:id]
 
     if userresult['Admin'] == "Admin"
-        result = $db.execute("SELECT * FROM monsters")
+        result = all_monsters()
     else
-        result = $db.execute("SELECT * FROM monsters WHERE UserId = ?", id)
+        result = user_monsters(id)
     end
     slim(:"monsters/index", locals:{monsters:result, users:userresult})
 end
 
 get('/monsters/new') do
     result = $db.execute("SELECT * FROM types")
+    # I believe this could be done with helpers
 
     slim(:"monsters/new", locals:{users:userresult, types:result})
 end
@@ -199,95 +191,97 @@ end
 get('/monsters/:id') do
     id = params[:id].to_i
     
-    result = $db.execute("SELECT * FROM monsters WHERE Id = ?", id).first
+    result = monster(id)
+    typeresult = monsters_types(id)
 
-    resulttype = $db.execute("SELECT Type FROM monsters_types_rel INNER JOIN types ON monsters_types_rel.TypeId = types.Id WHERE MonsterId = ?", id)
-
-    # OBS!! Still needs a popup for feeding and code for that
-    # Food needs to be added so that compatable foods can be viewed and fed to the pet
-
-    slim(:"monsters/show", locals:{monsters:result, types:resulttype, users:userresult})
+    slim(:"monsters/show", locals:{monsters:result, types:typeresult, users:userresult})
 end
 
 get('/monsters/:id/edit') do
     id = params[:id].to_i
     
-    monsterresult = $db.execute("SELECT * FROM monsters WHERE Id = ?", id).first
-    typeresult = $db.execute("SELECT monsters_types_rel.TypeId, types.Type FROM monsters_types_rel INNER JOIN monsters ON monsters_types_rel.MonsterId = monsters.Id INNER JOIN types ON monsters_types_rel.TypeId = types.Id WHERE monsters.Id = ?", id)
+    result = monster(id)
+    typeresult = monsters_types(id)
     alltypes = $db.execute("SELECT * FROM types")
+    # could probably be handled with a helper function
 
-    slim(:"monsters/edit", locals:{monsters:monsterresult, users:userresult, types:typeresult, alltypes:alltypes})
+    slim(:"monsters/edit", locals:{monsters:result, users:userresult, types:typeresult, alltypes:alltypes})
 end
 
 post('/monsters') do
-    name = params[:name]
-    age = params[:age]
-    desc = params[:desc]
-    type1 = params[:type1]
-    type2 = params[:type2]
-    userid = session[:id]
-    fed = "No"
+    @name = params[:name]
+    @age = params[:age]
+    @desc = params[:desc]
+    @type1 = params[:type1]
+    @type2 = params[:type2]
+    @userid = session[:id]
+    @fed = "False"
+    @sold = 1
     session[:type_match] = false
 
-    if type1 == type2
+    if @type1 == @type2
         session[:type_match] = true
         redirect('/monsters/new')
     end
 
-    $db.execute("INSERT INTO monsters (Name, Age, Fed, UserId, Description) VALUES (?, ?, ?, ?, ?)", name, age, fed, userid, desc)
-    id = $db.execute("SELECT last_insert_rowid()")
-    id = id[0]["last_insert_rowid()"]
-    $db.execute("INSERT INTO monsters_types_rel (TypeId, MonsterId) VALUES (?, ?)", type1, id)
-    $db.execute("INSERT INTO monsters_types_rel (TypeId, MonsterId) VALUES (?, ?)", type2, id)
+    new_monster()
 
     redirect('/monsters/')
 end
 
 post('/monsters/:id/update') do
     session[:type_match] = false
+    session[:ownership_false_monster] = false
     
     # check user owns pets
     # check if user is admin
 
-    id = params[:id]
+    @id = params[:id]
+    @name = params[:name]
+    @age = params[:age]
+    @desc = params[:desc]
+    @userid = params[:userid]
+    @type1 = params[:type1]
+    @type2 = params[:type2]
+    @previous_types = previous_types_monster(@id)
+    monster = monster(@id)
 
-    name = params[:name]
-    age = params[:age]
-    desc = params[:desc]
-    userid = params[:id]
-    type1 = params[:type1]
-    type2 = params[:type2]
-    previous_types = $db.execute("SELECT TypeId FROM monsters_types_rel WHERE MonsterId = ?", id)
-
-    if type1 == type2
+    if @type1 == @type2 && @type1 != nil
         session[:type_match] = true
-        redirect("/monsters/#{id}/edit")
-    end
-
-    if params[:name] != ""
-        $db.execute("UPDATE monsters SET Name = ? WHERE Id = ?", name, id)
-    end
-    if params[:age] != ""
-        $db.execute("UPDATE monsters SET Age = ? WHERE Id = ?", age, id)
-    end
-    if params[:desc] != ""
-        $db.execute("UPDATE monsters SET Description = ? WHERE Id = ?", desc, id)
-    end
-    if params[:id] != ""
-        $db.execute("UPDATE monsters SET UserId = ? WHERE Id = ?", userid, id)
-    end
-    if params[:type1] != "" 
-        $db.execute("UPDATE monsters_types_rel SET TypeId = ? WHERE MonsterId = ? AND TypeId = ?", type1, id, previous_types[0]['TypeId'])
-    end
-    if  params[:type2] != ""
-        $db.execute("UPDATE monsters_types_rel SET TypeId = ? WHERE MonsterId = ? AND TypeId = ?", type2, id, previous_types[1]['TypeId'])
+        redirect("/monsters/#{@id}/edit")
+    elsif userresult['Admin'] == "Admin" || monster['UserId'] == userresult['Id']
+        update_monster()
+    else
+        session[:ownership_false_monster] = true
+        redirect("/monsters/#{@id}/edit")
     end
 
     redirect("/monsters/")
 end
 
+post('/monsters/:id/sell') do 
+    id = params[:id]
+    @sold_item = "monster"
+    sell(id)
+
+    if session[:ownership_false_monster]
+        redirect('/monsters/#{id}/edit')
+    end
+
+    redirect('/monsters/')
+end
+
 post('/monsters/:id/delete') do
-    # delete stuff
+    session[:ownership_false_monster] = false
+    id = params[:id]
+  
+    if userresult['Admin'] == "Admin"
+        delete_monster(id)
+    else
+        session[:ownership_false_monster] = true
+        redirect("/monsters/#{@id}/edit")
+    end
+    redirect("/monsters/")
 end
 
 # Foods
@@ -295,18 +289,25 @@ end
 get('/foods/') do
     session[:type_match] = false
     
-    id = session[:id]
+    id = userresult['Id']
 
     if userresult['Admin'] == "Admin"
-        result = $db.execute("SELECT * FROM foods")
+        result = all_foods(id)
     else
-        result = $db.execute("SELECT * FROM users_foods_rel INNER JOIN foods ON foods.Id = users_foods_rel.FoodId WHERE UserId = ?", id)
+        result = user_foods(id)
+        for i in 0..result.length-1 do
+            if result[i]['FoodAmount'] == 0
+                remove_user_food(result[i]['Id'], result[i]['UserId'])
+            end
+        end
     end
+
     slim(:"foods/index", locals:{foods:result, users:userresult})
 end
 
 get('/foods/new') do
     alltypes = $db.execute("SELECT * FROM types")
+    # Should be possible to use helper functions
 
     slim(:"foods/new", locals:{users:userresult, alltypes:alltypes})
 end
@@ -314,40 +315,37 @@ end
 get('/foods/:id') do
     id = params[:id].to_i
     
-    result = $db.execute("SELECT * FROM foods WHERE Id = ?", id).first
-    resulttype = $db.execute("SELECT Type FROM foods_types_rel INNER JOIN types ON foods_types_rel.TypeId = types.Id WHERE FoodId = ?", id)
+    result = food(id)
+    typeresult = food_types(id)
 
-    slim(:"foods/show", locals:{foods:result, users:userresult, types:resulttype})
+    slim(:"foods/show", locals:{foods:result, users:userresult, types:typeresult})
 end
 
 get('/foods/:id/edit') do
     id = params[:id].to_i
     
-    foodresult = $db.execute("SELECT * FROM foods WHERE Id = ?", id).first
-    typeresult = $db.execute("SELECT foods_types_rel.TypeId, types.Type FROM foods_types_rel INNER JOIN foods ON foods_types_rel.FoodId = foods.Id INNER JOIN types ON foods_types_rel.TypeId = types.Id WHERE foods.Id = ?", id)
+    result = food(id)
+    typeresult = food_types(id)
     alltypes = $db.execute("SELECT * FROM types")
+    # HELPER
 
-    slim(:"foods/edit", locals:{foods:foodresult, users:userresult, types:typeresult, alltypes:alltypes})
+    slim(:"foods/edit", locals:{foods:result, users:userresult, types:typeresult, alltypes:alltypes})
 end
 
 post('/foods') do
     session[:type_match] = false
 
-    name = params[:name]
-    desc = params[:desc]
-    type1 = params[:type1]
-    type2 = params[:type2]
-    type3 = params[:type3]
+    @name = params[:name]
+    @desc = params[:desc]
+    @type1 = params[:type1]
+    @type2 = params[:type2]
+    @type3 = params[:type3]
+    @amount = params[:amount] 
+    p "amountcheck"
+    p @amount
 
-    if type1 != type2 && type1 != type3 && type2 != type3 
-
-        $db.execute("INSERT INTO foods (Name, Description) VALUES (?, ?)", name, desc)
-
-        id = $db.execute("SELECT last_insert_rowid()")
-        id = id[0]["last_insert_rowid()"]
-        $db.execute("INSERT INTO foods_types_rel (TypeId, FoodId) VALUES (?, ?)", type1, id)
-        $db.execute("INSERT INTO foods_types_rel (TypeId, FoodId) VALUES (?, ?)", type2, id)
-        $db.execute("INSERT INTO foods_types_rel (TypeId, FoodId) VALUES (?, ?)", type3, id)
+    if @type1 != @type2 && @type1 != @type3 && @type2 != @type3 && userresult['Admin'] == "Admin" 
+        new_food()
     else
         session[:type_match] = true
         redirect('/foods/new')
@@ -359,49 +357,49 @@ end
 post('/foods/:id/update') do
     session[:type_match] = false
 
-    id = params[:id]
-    name = params[:name]
-    desc = params[:desc]
-    type1 = params[:type1]
-    type2 = params[:type2]
-    type3 = params[:type3]
+    @id = params[:id]
+    @name = params[:name]
+    @desc = params[:desc]
+    @type1 = params[:type1]
+    @type2 = params[:type2]
+    @type3 = params[:type3]
+    @previous_types = previous_types_food(@id)
+    @amount = params[:amount]
+    p "amountcheck"
+    p @amount
 
-    previous_types = $db.execute("SELECT TypeId FROM foods_types_rel WHERE FoodId = ?", id)
-
-    if type1 == type2 || type1 == type3 || type2 == type3
+    if @type1 == @type2 || @type1 == @type3 || @type2 == @type3
         session[:type_match] = true
         redirect("/foods/#{id}/edit")
-    else
-        if params[:name] != ""
-            $db.execute("UPDATE foods SET Name = ? WHERE Id = ?", name, id)
-        end
-        if params[:desc] != ""
-            $db.execute("UPDATE foods SET Description = ? WHERE Id = ?", desc, id)
-        end
-        if  params[:type1] != ""
-            $db.execute("UPDATE foods_types_rel SET TypeId = ? WHERE FoodId = ? AND TypeId = ?", type1, id, previous_types[0]['TypeId'])
-        end
-        if  params[:type2] != ""
-            $db.execute("UPDATE foods_types_rel SET TypeId = ? WHERE FoodId = ? AND TypeId = ?", type2, id, previous_types[1]['TypeId'])
-        end
-        if  params[:type3] != ""
-            $db.execute("UPDATE foods_types_rel SET TypeId = ? WHERE FoodId = ? AND TypeId = ?", type3, id, previous_types[2]['TypeId'])
-        end
+    elsif userresult['Admin'] == "Admin"
+        update_food()
+    else 
+        redirect("/foods/#{@id}/edit")
     end
 
-
     redirect('/foods/')
+end
+
+post('/foods/:id/delete') do
+    id = params[:id]
+  
+    if userresult['Admin'] == "Admin"
+        delete_food(id)
+    else
+        redirect("/foods/#{@id}/edit")
+    end
+    redirect("/foods/")
 end
 
 # Toys
 
 get('/toys/') do
-    id = session[:id]
+    id = userresult['Id']
     
     if userresult['Admin'] == "Admin"
-        result = $db.execute("SELECT * FROM toys")
+        result = all_toys()
     else
-        result = $db.execute("SELECT * FROM toys WHERE UserId = ?", id)
+        result = user_toys(id)
     end
     slim(:"toys/index", locals:{toys:result, users:userresult})
 end
@@ -415,62 +413,136 @@ end
 get('/toys/:id') do
     id = params[:id].to_i
 
-    result = $db.execute("SELECT toys.Id, toys.Name, toys.Description, types.Type FROM toys INNER JOIN types ON types.Id = toys.TypeId WHERE toys.Id = ?", id).first
-
+    result = toy(id)
     slim(:"toys/show", locals:{toys:result, users:userresult})
 end
 
 get('/toys/:id/edit') do
     id = params[:id].to_i
     
-    toysresult = $db.execute("SELECT * FROM toys INNER JOIN types ON types.Id = toys.TypeId WHERE toys.Id = ?", id).first
+    result = toy(id)
     alltypes = $db.execute("SELECT * FROM types")
 
-    slim(:"toys/edit", locals:{toys:toysresult, users:userresult, alltypes:alltypes})
+    slim(:"toys/edit", locals:{toys:result, users:userresult, alltypes:alltypes})
 end
 
 post('/toys') do
-    name = params[:name]
-    desc = params[:desc]
-    type = params[:type]
+    @name = params[:name]
+    @desc = params[:desc]
+    @type = params[:type]
+    @sold = 1
 
-    $db.execute("INSERT INTO toys (Name, Description, TypeId) VALUES (?, ?, ?)", name, desc, type)
-
-    redirect('/toys/')
-end
-
-post('/toys/:id/update') do
-    id = params[:id]
-    name = params[:name]
-    desc = params[:desc]
-    type = params[:type]
-
-    if params[:name] != ""
-        $db.execute("UPDATE toys SET Name = ? WHERE Id = ?", name, id)
-    elsif params[:desc] != ""
-        $db.execute("UPDATE toys SET Descrpition = ? WHERE Id = ?", desc, id)
-    elsif params[:type] != ""
-        $db.execute("UPDATE toys SET TypeId = ? WHERE Id = ?", type, id)
+    if userresult['Admin'] == "Admin"
+        new_toy()
     end
 
     redirect('/toys/')
 end
 
+post('/toys/:id/update') do
+    @id = params[:id]
+    @name = params[:name]
+    @desc = params[:desc]
+    @type = params[:type]
+
+    if userresult['Admin'] != "Admin"
+        redirect('/toys/#{@id}/edit')
+    else
+        update_toy()
+    end
+    redirect('/toys/')
+end
+
+post('/toys/:id/sell') do 
+    id = params[:id]
+    @sold_item = "toy"
+    sell(id)
+
+    if session[:ownership_false_toy]
+        redirect('/toys/#{id}/edit')
+    end
+
+    redirect('/toys/')
+end
+
+post('/toys/:id/delete') do
+    id = params[:id]
+  
+    if userresult['Admin'] == "Admin"
+        delete_toy(id)
+    else
+        redirect("/toys/#{@id}/edit")
+    end
+    redirect("/toys/")
+end
+
 # market
 
 get('/market/') do
-    # result = db.execute("SELECT * FROM market INNER JOIN monsters ON monsters.Id = market.MonsterId INNER JOIN toys ON toys.Id = market.ToyId INNER JOIN foods ON foods.Id = market.FoodId")
-    # p "inner join result"
-    # p result
+    
+    monstersresult = sold_pets() 
+    foodsresult = sold_foods()
+    toysresult = sold_toys()
 
-    # this could probably be turned into a before block so as to clean the code
-
-    slim(:"market/index", locals:{users:userresult})
+    slim(:"market/index", locals:{users:userresult, monsters:monstersresult, foods:foodsresult, toys:toysresult})
 end
 
+get("/market/toys/:id") do
+    id = params[:id]
+    session[:market] = "toy"
 
-# Helpers
+    result = toy(id)
+    slim(:"market/show", locals:{users:userresult, toys:result})
+end
 
-# helpers do
-    
-# end
+post("/market/toys/:id/update") do
+    id = params[:id]
+    @purchased_item = "toy"
+
+    purchase(id)
+
+    redirect("/toys/")
+end
+
+get("/market/foods/:id") do
+    id = params[:id]
+    session[:market] = "food"
+
+    result = market_food(id)
+    typeresult = food_types(id)
+
+    slim(:"market/show", locals:{users:userresult, foods:result, types:typeresult})
+end
+
+post("/market/foods/:id/update") do
+    id = params[:id]
+    @purchased_item = "food"
+
+    @amount = params[:amount].to_i
+    p "FOOD TEST"
+    p @amount
+
+    purchase(id)
+
+    redirect("/foods/")
+end
+
+get("/market/monsters/:id") do
+    id = params[:id]
+    session[:market] = "monster"
+
+    result = monster(id)
+    typeresult = monsters_types(id)
+
+    slim(:"market/show", locals:{users:userresult, monsters:result, types:typeresult})
+end
+
+post("/market/monsters/:id/update") do
+    id = params[:id]
+    @purchased_item = "monster"
+
+    purchase(id)
+
+    redirect("/monsters/")
+
+end

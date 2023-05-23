@@ -1,1 +1,47 @@
 / shows the information for a specific entry
+
+div.exit
+    a href="/market/" Exit
+
+- if session[:market] == "toy"
+    div#toyinfo
+        h1 #{toys['Name']}
+        / img src="#{monsters['ImageLink']}" alt=""/
+        p #{toys['Description']}
+        p Works with #{toys['Type']} type pets!
+
+        div.buy
+            form action="/market/toys/#{toys['Id']}/update" method="post"
+                input type="submit" Value="Buy"
+
+- if session[:market] == "monster"
+    div#monsterinfo
+        h1 #{monsters['Name']}
+        / img src="#{monsters['ImageLink']}" alt=""/
+        / p Types:
+        p Age: #{monsters['Age']}
+        p #{monsters['Description']}
+        h3 Types:
+        - types.each do |type|
+            p #{type['Type']}
+
+        div.buy
+            form action="/market/monsters/#{monsters['Id']}/update" method="post"
+                input type="submit" Value="Buy"
+
+- if session[:market] == "food"
+    div#foodinfo
+        h1 #{foods['Name']}
+        h2 Total Amount: #{foods['MarketAmount']}
+        p #{foods['Description']}
+        h3 Types:
+        - types.each do |type|
+            p #{type['Type']}
+
+        div.buy
+            form action="/market/foods/#{foods['Id']}/update" method="post"
+                label for="amount" Amount?
+                br
+                input#amount type="number" name="amount" min="0" placeholder="0"
+                br
+                input type="submit" Value="Buy"

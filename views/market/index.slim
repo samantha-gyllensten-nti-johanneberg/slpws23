@@ -1,7 +1,7 @@
 / shows all of the listings, and lets the user filter between them
 
 / div#marketmenu
-/     a href="" Monsters 
+/ a href="food_jump" Food
 /     a href="" Food 
 /     a href="" Toys 
 
@@ -16,8 +16,27 @@
 /                 p #{market_listing['Description']}
 /                 p #{market_listing['Price']}
 
+h1 Food: 
+ul
+    - foods.each do |food|
+        -if food['MarketAmount'] != 0
+            li.entry
+                h2 #{food['Name']}
+                a href="/market/foods/#{food['Id']}" 
+                    p See information
 
+h1 Pets:
+ul
+    - monsters.each do |monster|
+        li.entry
+            h2 #{monster['Name']}
+            a href="/market/monsters/#{monster['Id']}" 
+                p See information
 
-
-/ shows all of the listings, and lets the user filter between them
-h1 Hi!
+h1 Toys:
+ul
+    - toys.each do |toy|
+        li.entry
+            h2 #{toy['Name']}
+            a href="/market/toys/#{toy['Id']}" 
+                p See information

@@ -282,7 +282,7 @@ form {
 .information form {
     width: 95%;
     height: fit-content;
-    padding: 5px;
+    padding: 5px 5px 0px 5px;
 }
 
 .information input[type=text] {
@@ -362,7 +362,7 @@ textarea {
 }
 
 .information input[type="submit"] {
-    margin: 8px;
+    margin-top: 8px;
     color: bisque;
     background-color: rgb(125, 74, 38);
     border: 2px solid bisque;
@@ -377,12 +377,17 @@ textarea {
     border: 2px solid rgb(125, 74, 38);
 }
 
+.deletewrapper {
+    display: flex;
+    width: 95%;
+}
+
 .delete input[type=submit] {
     color: bisque;
     background-color: rgb(125, 74, 38);
     border: 2px solid bisque;
     border-radius: 5px;
-    margin-bottom: 5px;
+    margin-bottom: 20px;
     width: 60px;
 }
 .delete input[type=submit]:hover {
@@ -419,4 +424,72 @@ textarea {
     padding-left: 20px;
     padding-bottom: 20px;
     border: 2px solid rgb(165, 121, 55);
+}
+
+#amount {
+    width: 100px;
+    height: 33px;
+    background-color: bisque;
+    border: 2px solid rgb(125, 74, 38);
+    border-radius: 10px;
+    padding: 7px;
+}
+
+.buy input[type=submit] {
+        color: bisque;
+        background-color: rgb(125, 74, 38);
+        border: 2px solid bisque;
+        border-radius: 5px;
+        margin-top: 10px;
+        margin-bottom: 5px;
+        height: 25px;
+        width: 60px;
+}
+
+.buy input[type=submit]:hover {
+        color: rgb(125, 74, 38);
+        background-color: bisque;
+        border: 2px solid rgb(125, 74, 38);
+}
+
+.sell input[type=submit] {
+        color: bisque;
+        background-color: rgb(125, 74, 38);
+        border: 2px solid bisque;
+        border-radius: 5px;
+        margin-top: 10px;
+        margin-bottom: 5px;
+        height: 25px;
+        width: 60px;
+}
+
+.sell input[type=submit]:hover {
+        color: rgb(125, 74, 38);
+        background-color: bisque;
+        border: 2px solid rgb(125, 74, 38);
+}
+
+.editbutton {
+    color: bisque;
+    background-color: rgb(125, 74, 38);
+    border: 2px solid bisque;
+    border-radius: 5px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    height: 25px;
+    width: 60px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.editbutton a {
+    text-decoration: none;
+}
+
+.editbutton:hover {
+    color: rgb(125, 74, 38);
+    background-color: bisque;
+    border: 2px solid rgb(125, 74, 38);
 }

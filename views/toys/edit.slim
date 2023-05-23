@@ -1,3 +1,4 @@
+
 - if users['Admin'] == "Admin"
     div.edit_entry
 
@@ -27,9 +28,11 @@
                 br
 
                 input type="submit" value="Update"
-                 div.delete
+            div.deletewrapper
+                div.delete
                     form action="/toys/#{toys['Id']}/delete" method="post"
                         input type="submit" Value="Delete"
-
+- else 
+   p You do not have access to this function
 
 / there needs to be a version for just selling the pet itself and changing owners

@@ -1,5 +1,7 @@
 - if session[:type_match]
     p You have entered the same type twice
+- if session[:ownership_false_monster]
+    p You do not have access to this function
 
 div.edit_entry
 
@@ -19,12 +21,12 @@ div.edit_entry
             - if users['Admin'] == "Admin"
                 label for="age" Age?
                 br
-                input#weight type="number" name="age" min="0" placeholder="#{monsters['Age']}"
+                input#age type="number" name="age" min="0" placeholder="#{monsters['Age']}"
                 br
 
                 label for="desc" Pet's Description?
                 br
-                textarea#name type="text" maxlength="500" name="desc" placeholder="#{monsters['Description']}"
+                textarea#desc type="text" maxlength="500" name="desc" placeholder="#{monsters['Description']}"
                 br
 
                 label for="userid" User (Id number)?
@@ -49,6 +51,7 @@ div.edit_entry
                                 option value="#{type['Id']}" #{type['Type']} 
 
             input type="submit" value="Update"
+        div.deletewrapper
             div.delete
                 form action="/monsters/#{monsters['Id']}/delete" method="post"
                     input type="submit" Value="Delete"

@@ -1,50 +1,60 @@
-- if session[:type_match]
-    p You have entered repeated types
+- if users['Admin'] == "Admin"
+    - if session[:type_match]
+        p You have entered repeated types
 
-div.edit_entry
+    div.edit_entry
 
-    div.exit
-            a href="/foods/#{foods['Id']}" Exit
+        div.exit
+                a href="/foods/#{foods['Id']}" Exit
 
-    div.information
+        div.information
 
-        h1 #{foods['Name']}
-        br
-
-        form action="/foods/#{foods['Id']}/update" method="post"
-            label for="name" Update Food's Name?
-            br
-            input#name type="text" name="name" placeholder="#{foods['Name']}"
+            h1 #{foods['Name']}
             br
 
-            label for="desc" Description?
-            br
-            textarea#weight type="text" maxlength="500" wrap="soft" name="desc" min="0" placeholder="#{foods['Description']}"
-            br
+            form action="/foods/#{foods['Id']}/update" method="post"
+                label for="name" Update Food's Name?
+                br
+                input#name type="text" name="name" placeholder="#{foods['Name']}"
+                br
 
-            div.types_select_foods
-                div.type_select
-                    label for="type1" Type 1:
-                    select#type1 name="type1" 
-                        option selected="" value="#{types[0]['TypeId']}" #{types[0]['Type']} 
-                        - alltypes.each do |type| 
-                            option value="#{type['Id']}" #{type['Type']} 
-                div.type_select
-                    label for="type2" Type 2:
-                    select#type2 name="type2" 
-                        option selected="" value="#{types[1]['TypeId']}" #{types[1]['Type']} 
-                        - alltypes.each do |type| 
-                            option value="#{type['Id']}" #{type['Type']}
-                div.type_select
-                    label for="type3" Type 3:
-                    select#type3 name="type3" 
-                        option selected="" value="#{types[2]['TypeId']}" #{types[2]['Type']} 
-                        - alltypes.each do |type| 
-                            option value="#{type['Id']}" #{type['Type']}  
+                label for="desc" Description?
+                br
+                textarea#desc type="text" maxlength="500" wrap="soft" name="desc" min="0" placeholder="#{foods['Description']}"
+                br
 
-            input type="submit" value="Update"
-            div.delete                
-                form action="/foods/#{foods['Id']}/delete" method="post"
-                    input type="submit" Value="Delete"
+                div.types_select_foods
+                    div.type_select
+                        label for="type1" Type 1:
+                        select#type1 name="type1" 
+                            option selected="" value="#{types[0]['TypeId']}" #{types[0]['Type']} 
+                            - alltypes.each do |type| 
+                                option value="#{type['Id']}" #{type['Type']} 
+                    div.type_select
+                        label for="type2" Type 2:
+                        select#type2 name="type2" 
+                            option selected="" value="#{types[1]['TypeId']}" #{types[1]['Type']} 
+                            - alltypes.each do |type| 
+                                option value="#{type['Id']}" #{type['Type']}
+                    div.type_select
+                        label for="type3" Type 3:
+                        select#type3 name="type3" 
+                            option selected="" value="#{types[2]['TypeId']}" #{types[2]['Type']} 
+                            - alltypes.each do |type| 
+                                option value="#{type['Id']}" #{type['Type']}  
+
+                label for="amount" Amount:
+                br
+                input#amount type="number" name="amount" placeholder="#{foods['MarketAmount']}"
+                br
+
+                input type="submit" value="Update"
+            div.deletewrapper
+                div.delete                
+                    form action="/foods/#{foods['Id']}/delete" method="post"
+                        input type="submit" Value="Delete"
+- else 
+    p You do not have access to this function
+
 
 
