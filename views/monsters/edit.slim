@@ -6,7 +6,8 @@
 div.edit_entry
 
     div.exit
-            a href="/monsters/#{monsters['Id']}" Exit
+        a href="/monsters/#{monsters['Id']}" 
+            p Exit
 
     div.information
 
@@ -18,7 +19,7 @@ div.edit_entry
             input#name type="text" name="name" placeholder="#{monsters['Name']}"
             br
 
-            - if users['Admin'] == "Admin"
+            - if userresult['Admin'] == "Admin"
                 label for="age" Age?
                 br
                 input#age type="number" name="age" min="0" placeholder="#{monsters['Age']}"
@@ -39,15 +40,15 @@ div.edit_entry
                     div.type_select
                         label for="type1" Type 1:
                         select#type1 name="type1" 
-                            option selected="" value="#{types[0]['TypeId']}" #{types[0]['Type']} 
-                            - alltypes.each do |type| 
+                            option selected="" value="#{monstertypes[0]['TypeId']}" #{monstertypes[0]['Type']} 
+                            - types.each do |type| 
                                 option value="#{type['Id']}" #{type['Type']} 
 
                     div.type_select
                         label for="type2" Type 2:
                         select#type2 name="type2" 
-                            option selected="" value="#{types[1]['TypeId']}" #{types[1]['Type']} 
-                            - alltypes.each do |type| 
+                            option selected="" value="#{monstertypes[1]['TypeId']}" #{monstertypes[1]['Type']} 
+                            - types.each do |type| 
                                 option value="#{type['Id']}" #{type['Type']} 
 
             input type="submit" value="Update"

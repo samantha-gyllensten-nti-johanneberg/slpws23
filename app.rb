@@ -4,16 +4,34 @@ require 'slim'
 require 'sinatra/reloader'
 require 'sqlite3'
 require 'bcrypt'
-require_relative 'model'
+# require 'yard'
+# require 'yard-sinatra'
+require './model.rb'
 
 enable :sessions
 
-# Have to be in app.rb
+include Model
+
+# Declares a global variable for database access
 $db = connect_to_db_hash()
-# Required for CASCADE SQL functions
+# Executes SQL code required for CASCADE SQL functions
 $db.execute("PRAGMA foreign_keys = ON")
 
-# use before blocks to check if admin, and if logged in (if not, make sure to reroute to index to avoid error messages)
+
+helpers do
+    def userresult()
+        id = session[:id]
+        userresult = $db.execute("SELECT * FROM users WHERE Id = ?", id).first
+        
+        return userresult
+    end
+
+    def types()
+        result = $db.execute("SELECT * FROM types")
+        return result
+    end
+end
+
 before do
     
     userresult = userresult()
@@ -31,41 +49,40 @@ before do
     end
 end
 
+# Displays landing page
 get('/') do
-
-    if session[:log_in]
-        slim(:"index", locals:{users:userresult})
-    else
-        slim(:"index")
-    end
+    slim(:"index")
 end
 
-# Users
-
-#could users be restful:d??
+# Displays a login or logout form depending on login status
 get('/users/') do
-    if session[:log_in]
-        slim(:"users/index", locals:{users:userresult})
-    else
-        slim(:"users/index")
-    end
+    slim(:"users/index")
 end
 
+# Displays a registration form
 get('/users/new') do
     slim(:"users/new")
 end
 
+# Displays users information, or if the user is an admin, all users information
+#
+# @see Model#all_users
 get('/users/:id') do
-    id = params[:id].to_i
 
     if userresult['Admin'] == "Admin"
         result = all_users()
-        slim(:"users/show", locals:{users:userresult, userlist:result})
+        slim(:"users/show", locals:{userlist:result})
     else
-        slim(:"users/show", locals:{users:userresult})
+        slim(:"users/show")
     end
 end
 
+# Attempts to log the user in using the login form
+# 
+# @param username [String], the username
+# @param password [String] the password entered
+# 
+# @see Model#check_login
 post('/log_in') do
     username = params[:username]
     password = params[:password]
@@ -73,11 +90,19 @@ post('/log_in') do
     check_login = check_login(username, password)
 end
 
+# Logs user out and destroys session
 post('/log_out') do
     session.destroy
     redirect('/')
 end
 
+# Attempts to register users using the registration form
+# 
+# @param [String] username, the username
+# @param [String] password, the password
+# @param [String] confirm_password, the password confirmation
+# 
+# @see Model#check_register
 post('/register_user') do
     username = params[:username]
     password = params[:password1]
@@ -92,6 +117,11 @@ post('/register_user') do
     end
 end
 
+# Displays an edit form for the user with the :id
+# 
+# @param [Integer] :id, the ID of the user being edited (note, not necessarily active user)  
+# 
+# @see Model#user
 get('/users/:id/edit') do
     id = params[:id].to_i
 
@@ -99,9 +129,17 @@ get('/users/:id/edit') do
         userresult = user(id)
     end
 
-    slim(:"users/edit", locals:{users:userresult})
+    slim(:"users/edit")
 end
 
+# Checks if password and username are either that of the user being edited, or an Admin
+# 
+# @param [String] password, the password
+# @param [String] username, the username
+# @param [Integer] :id, the Id of the edited user
+# 
+# @see Model#checkpassword
+# @see Model#user
 post('/password_check/:id') do
     session[:password_checked_error] = false
     session[:password_checked] = false
@@ -146,6 +184,14 @@ post('/password_check/:id') do
 
 end
 
+# Updates users information in database
+# 
+# @param [String] username, the username
+# @param [String] password, the password
+# @param [Integer] :id, the Id of the edited user
+# 
+# @see Model#username_update
+# @see Model#password_update
 post('/users/:id/update') do
     id = params[:id]
 
@@ -162,14 +208,24 @@ post('/users/:id/update') do
     redirect('/')
 end
 
+# Deletes user from database
+# 
+# @param [Integer] :id, the Id of the deleted user
+# 
+# @see Model#delete_user
 post('/users/:id/delete') do
     id = params[:id]
     delete_user(id)
     redirect('/')
 end
 
-# Monsters
 
+# Displays users monsters, or all monsters if the user is an Admin
+# 
+# @param [Integer] :id, the logged in users' Id
+# 
+# @see Model#all_monsters
+# @see Model#user_monsters
 get('/monsters/') do
     id = session[:id]
 
@@ -178,36 +234,56 @@ get('/monsters/') do
     else
         result = user_monsters(id)
     end
-    slim(:"monsters/index", locals:{monsters:result, users:userresult})
+    slim(:"monsters/index", locals:{monsters:result})
 end
 
+# Displays a form to create a new monster
 get('/monsters/new') do
-    result = $db.execute("SELECT * FROM types")
-    # I believe this could be done with helpers
-
-    slim(:"monsters/new", locals:{users:userresult, types:result})
+    slim(:"monsters/new")
 end
 
+# Displays a monsters information
+# 
+# @param [Integer] :id, the monster's Id
+# 
+# @see Model#monster
+# @see Model#monster_types
 get('/monsters/:id') do
     id = params[:id].to_i
     
     result = monster(id)
     typeresult = monsters_types(id)
 
-    slim(:"monsters/show", locals:{monsters:result, types:typeresult, users:userresult})
+    slim(:"monsters/show", locals:{monsters:result, monstertypes:typeresult})
 end
 
+# Displays a form to edit a monsters information
+# 
+# @param [Integer] :id, the monster's Id
+# 
+# @see Model#monster
+# @see Model#monster_types
 get('/monsters/:id/edit') do
     id = params[:id].to_i
     
     result = monster(id)
     typeresult = monsters_types(id)
-    alltypes = $db.execute("SELECT * FROM types")
-    # could probably be handled with a helper function
 
-    slim(:"monsters/edit", locals:{monsters:result, users:userresult, types:typeresult, alltypes:alltypes})
+    slim(:"monsters/edit", locals:{monsters:result, users:userresult, monstertypes:typeresult})
 end
 
+# Attempts to insert an entry into the monsters table in the database
+# 
+# @param [String] name, the name of the monster
+# @param [Integer] age, the age of the monster
+# @param [String] desc, the description of the monster
+# @param [Integer] type1, the first type for the monster using the Type's Id
+# @param [Integer] type2, the second type for the monster using the Type's Id
+# @param [Integer] userid, the Id of the user and owner the monster
+# @param [String] fed, the fed status of the monster - automatically fed upon creation
+# @param [Integer] sold, the status of if the monster is being sold - in binary 1 is being sold and the monster is automatically sold upon creation
+# 
+# @see Model#new_monster
 post('/monsters') do
     @name = params[:name]
     @age = params[:age]
@@ -229,13 +305,22 @@ post('/monsters') do
     redirect('/monsters/')
 end
 
+# Attempts to update an entry into the monsters table in the database
+# 
+# @param [Integer] :id, the monster's Id
+# @param [String] name, the name of the monster
+# @param [Integer] age, the age of the monster
+# @param [String] desc, the description of the monster
+# @param [Integer] type1, the first type for the monster using the Type's Id
+# @param [Integer] type2, the second type for the monster using the Type's Id
+# @param [Array] previous_types, an array containing the previous types of the monster
+# 
+# @see Model#previous_types_monster
+# @see Model#update_monster
 post('/monsters/:id/update') do
     session[:type_match] = false
     session[:ownership_false_monster] = false
     
-    # check user owns pets
-    # check if user is admin
-
     @id = params[:id]
     @name = params[:name]
     @age = params[:age]
@@ -259,6 +344,12 @@ post('/monsters/:id/update') do
     redirect("/monsters/")
 end
 
+# Attempts to update a monster's entry to display as being sold on the market. Temporarily moved to Admin user
+# 
+# @param [Integer] :id. the monster's Id
+# @param [String] sold_item, declares that the sold item is a monster
+# 
+# @see Model#sell
 post('/monsters/:id/sell') do 
     id = params[:id]
     @sold_item = "monster"
@@ -271,6 +362,11 @@ post('/monsters/:id/sell') do
     redirect('/monsters/')
 end
 
+# Attempts to delete an entry from the monster table
+# 
+# @param [Integer] :id. the monster's Id
+# 
+# @see Model#delete_monster
 post('/monsters/:id/delete') do
     session[:ownership_false_monster] = false
     id = params[:id]
@@ -284,8 +380,14 @@ post('/monsters/:id/delete') do
     redirect("/monsters/")
 end
 
-# Foods
 
+# Displays a users foods, or if the user is an Admin, all foods
+# 
+# @param [Integer] :id, the user's id
+# 
+# @see Model#all_foods
+# @see Model#user_foods
+# @see Model#remove_user_food
 get('/foods/') do
     session[:type_match] = false
     
@@ -302,36 +404,54 @@ get('/foods/') do
         end
     end
 
-    slim(:"foods/index", locals:{foods:result, users:userresult})
+    slim(:"foods/index", locals:{foods:result})
 end
 
+# Displays a form to create a new food
 get('/foods/new') do
-    alltypes = $db.execute("SELECT * FROM types")
-    # Should be possible to use helper functions
-
-    slim(:"foods/new", locals:{users:userresult, alltypes:alltypes})
+    slim(:"foods/new")
 end
 
+# Displays the information for the correlating food to id
+# 
+# @param [Integer] :id, the food's Id
+# 
+# @see Model#food
+# @see Model#food_types
 get('/foods/:id') do
     id = params[:id].to_i
     
     result = food(id)
     typeresult = food_types(id)
 
-    slim(:"foods/show", locals:{foods:result, users:userresult, types:typeresult})
+    slim(:"foods/show", locals:{foods:result, foodtypes:typeresult})
 end
 
+# Displays a form to edit a food's entry
+# 
+# @param [Integer] :id, the food's Id
+# 
+# @see Model#food
+# @see Model#food_types
 get('/foods/:id/edit') do
     id = params[:id].to_i
     
     result = food(id)
     typeresult = food_types(id)
-    alltypes = $db.execute("SELECT * FROM types")
-    # HELPER
 
-    slim(:"foods/edit", locals:{foods:result, users:userresult, types:typeresult, alltypes:alltypes})
+    slim(:"foods/edit", locals:{foods:result, foodtypes:typeresult})
 end
 
+# Attempts to create a new entry for food in the foods table
+# 
+# @param [String] name, the food's name
+# @param [String] desc, the food's description
+# @param [Integer] type1, the first type capable of consuming the food
+# @param [Integer] type2, the second type capable of consuming the food
+# @param [Integer] type3, the third type capable of consuming the food
+# @param [Integer] amount, the amount of food available in total
+# 
+# @see Model#new_food
 post('/foods') do
     session[:type_match] = false
 
@@ -340,9 +460,7 @@ post('/foods') do
     @type1 = params[:type1]
     @type2 = params[:type2]
     @type3 = params[:type3]
-    @amount = params[:amount] 
-    p "amountcheck"
-    p @amount
+    @amount = params[:amount]
 
     if @type1 != @type2 && @type1 != @type3 && @type2 != @type3 && userresult['Admin'] == "Admin" 
         new_food()
@@ -354,6 +472,18 @@ post('/foods') do
     redirect('/foods/')
 end
 
+# Attempts to update an existing entry in the food table
+# 
+# @param [String] name, the food's name
+# @param [String] desc, the food's description
+# @param [Integer] type1, the first type capable of consuming the food
+# @param [Integer] type2, the second type capable of consuming the food
+# @param [Integer] type3, the third type capable of consuming the food
+# @param [Integer] amount, the amount of food available in total
+# @param [Array] previous_types, an array containing the previous types of the food
+# @param [Integer] amount, the amount of food available in total 
+# 
+# @see Model#update_food
 post('/foods/:id/update') do
     session[:type_match] = false
 
@@ -365,8 +495,6 @@ post('/foods/:id/update') do
     @type3 = params[:type3]
     @previous_types = previous_types_food(@id)
     @amount = params[:amount]
-    p "amountcheck"
-    p @amount
 
     if @type1 == @type2 || @type1 == @type3 || @type2 == @type3
         session[:type_match] = true
@@ -380,6 +508,11 @@ post('/foods/:id/update') do
     redirect('/foods/')
 end
 
+# Attempts to delete an entry from the food table
+# 
+# @param [Integer] :id, the food's Id
+# 
+# @see Model#delete_food
 post('/foods/:id/delete') do
     id = params[:id]
   
@@ -391,8 +524,16 @@ post('/foods/:id/delete') do
     redirect("/foods/")
 end
 
-# Toys
 
+
+
+
+# Displays the users toys, or all toys if the user is an admin
+# 
+# @param [Integer] :id, the user's Id
+# 
+# @see Model#all_toys
+# @see Model#user_toys
 get('/toys/') do
     id = userresult['Id']
     
@@ -401,31 +542,47 @@ get('/toys/') do
     else
         result = user_toys(id)
     end
-    slim(:"toys/index", locals:{toys:result, users:userresult})
+    slim(:"toys/index", locals:{toys:result})
 end
 
+# Displays a form to create a new entry for the toys table
 get('/toys/new') do
-    alltypes = $db.execute("SELECT * FROM types")
-
-    slim(:"toys/new", locals:{users:userresult, alltypes:alltypes})
+    slim(:"toys/new")
 end
 
+# Displays the information of a toy
+# 
+# @param [Integer] :id, the toy's Id
+# 
+# @see Model#toy
 get('/toys/:id') do
     id = params[:id].to_i
 
     result = toy(id)
-    slim(:"toys/show", locals:{toys:result, users:userresult})
+    slim(:"toys/show", locals:{toys:result})
 end
 
+# Displays a form to edit an entry in the toy table
+# 
+# @param [Integer] :id, the toy's Id
+# 
+# @see Model#toy
 get('/toys/:id/edit') do
     id = params[:id].to_i
     
     result = toy(id)
-    alltypes = $db.execute("SELECT * FROM types")
 
-    slim(:"toys/edit", locals:{toys:result, users:userresult, alltypes:alltypes})
+    slim(:"toys/edit", locals:{toys:result})
 end
 
+# Attempts to create a new entry in the toy table
+# 
+# @param [String] name, the toy's name
+# @param [String] desc, the toy's description
+# @param [Integer] type, the toy's type Id
+# @param [Integer] sold, the toy's sold status which defaults to 1 which corresponds to being sold and is displayed in binary
+# 
+# @see Model#new_toy
 post('/toys') do
     @name = params[:name]
     @desc = params[:desc]
@@ -439,6 +596,14 @@ post('/toys') do
     redirect('/toys/')
 end
 
+# Attempts to update an entry in the toy table
+# 
+# @param [Integer] :id, the toy's Id
+# @param [String] name, the toy's name
+# @param [String] desc, the toy's description
+# @param [Integer] type, the toy's type Id
+# 
+# @see Model#update_toy
 post('/toys/:id/update') do
     @id = params[:id]
     @name = params[:name]
@@ -453,6 +618,11 @@ post('/toys/:id/update') do
     redirect('/toys/')
 end
 
+# Attempts to update a toy's entry to display as being sold on the market. Temporarily moved to Admin user
+# 
+# @param [Integer] :id, the toy's Id
+# 
+# @see Model#sell
 post('/toys/:id/sell') do 
     id = params[:id]
     @sold_item = "toy"
@@ -465,6 +635,11 @@ post('/toys/:id/sell') do
     redirect('/toys/')
 end
 
+# Attempts to delete an entry from the toys table
+# 
+# @param [Integer] :id, the toy's Id
+# 
+# @see Model#delete_toy
 post('/toys/:id/delete') do
     id = params[:id]
   
@@ -476,25 +651,37 @@ post('/toys/:id/delete') do
     redirect("/toys/")
 end
 
-# market
 
+
+# Displays sold monsters, foods, and toys
 get('/market/') do
     
     monstersresult = sold_pets() 
     foodsresult = sold_foods()
     toysresult = sold_toys()
 
-    slim(:"market/index", locals:{users:userresult, monsters:monstersresult, foods:foodsresult, toys:toysresult})
+    slim(:"market/index", locals:{monsters:monstersresult, foods:foodsresult, toys:toysresult})
 end
 
+# Displays the information of a toy entry that is being sold
+# 
+# @param [Integer] :id, the toy's Id
+# 
+# @see Model#toy
 get("/market/toys/:id") do
     id = params[:id]
     session[:market] = "toy"
 
     result = toy(id)
-    slim(:"market/show", locals:{users:userresult, toys:result})
+    slim(:"market/show", locals:{toys:result})
 end
 
+# Attempts to update the toy's sold status and register a new user/owner
+# 
+# @param [Integer] :id, the toy's Id
+# @param [String] purchased_item, the type of object being purchased/updated
+# 
+# @see Model#purchase
 post("/market/toys/:id/update") do
     id = params[:id]
     @purchased_item = "toy"
@@ -504,6 +691,12 @@ post("/market/toys/:id/update") do
     redirect("/toys/")
 end
 
+# Displays the information of a food entry that is being sold
+# 
+# @param [Integer] :id, the food's Id
+# 
+# @see Model#market_food
+# @see Model#food_types
 get("/market/foods/:id") do
     id = params[:id]
     session[:market] = "food"
@@ -511,22 +704,32 @@ get("/market/foods/:id") do
     result = market_food(id)
     typeresult = food_types(id)
 
-    slim(:"market/show", locals:{users:userresult, foods:result, types:typeresult})
+    slim(:"market/show", locals:{foods:result, foodtypes:typeresult})
 end
 
+# Attempts to update the food's sold status and register a new user/owner
+# 
+# @param [Integer] :id, the food's Id
+# @param [String] purchased_item, the type of object being purchased/updated
+# @param [Integer] amount, the amount of the object being purchased
+# 
+# @see Model#purchase
 post("/market/foods/:id/update") do
     id = params[:id]
     @purchased_item = "food"
-
     @amount = params[:amount].to_i
-    p "FOOD TEST"
-    p @amount
 
     purchase(id)
 
     redirect("/foods/")
 end
 
+# Displays the information of a monster's entry that is being sold
+# 
+# @param [Integer] :id, the monster's Id
+# 
+# @see Model#monster
+# @see Model#monsters_types
 get("/market/monsters/:id") do
     id = params[:id]
     session[:market] = "monster"
@@ -534,9 +737,15 @@ get("/market/monsters/:id") do
     result = monster(id)
     typeresult = monsters_types(id)
 
-    slim(:"market/show", locals:{users:userresult, monsters:result, types:typeresult})
+    slim(:"market/show", locals:{monsters:result, monstertypes:typeresult})
 end
 
+# Attempts to update the monster's sold status and register a new user/owner
+# 
+# @param [Integer] :id, the monster's Id
+# @param [String] purchased_item, the type of object being purchased/updated
+# 
+# @see Model#purchase
 post("/market/monsters/:id/update") do
     id = params[:id]
     @purchased_item = "monster"

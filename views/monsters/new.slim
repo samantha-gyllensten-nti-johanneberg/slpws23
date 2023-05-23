@@ -1,33 +1,33 @@
 - if userresult['Admin'] == "Admin"
 
-/this could be a popup instead, but for now, this works. 
-        - if session[:type_match]
-        p You have entered the same type twice
+    /this could be a popup instead, but for now, this works. 
+    / - if session[:type_match]
+    / p You have entered the same type twice
 
-        div.exit
+    div.exit
         a href="/monsters/" Exit
 
-        form action="/monsters" method="post"
-        label for="name" Pet's Name:
-        input#name type="text" name="name" placeholder="Pet's Name"
+    form action="/monsters" method="post"
+    label for="name" Pet's Name:
+    input#name type="text" name="name" placeholder="Pet's Name"
 
-        label for="age" Age:
-        input#age type="number" name="age" min="0" placeholder="Pet's Age"
+    label for="age" Age:
+    input#age type="number" name="age" min="0" placeholder="Pet's Age"
 
-        label for="desc" Pet's Description:
-         textarea#desc type="text" maxlength="500" name="desc" placeholder="Pet's Description"
+    label for="desc" Pet's Description:
+    textarea#desc type="text" maxlength="500" name="desc" placeholder="Pet's Description"
 
-        label for="type1" Type 1:
-        select#type1 name="type1" 
-            - types.each do |type| 
-                option value="#{type['Id']}"#{type['Type']} 
+    label for="type1" Type 1:
+    select#type1 name="type1" 
+        - types.each do |type| 
+            option value="#{type['Id']}"#{type['Type']} 
 
-        label for="type2" Type 2:
-        select#type2 name="type2" 
-            - types.each do |type| 
-                option value="#{type['Id']}"#{type['Type']} 
+    label for="type2" Type 2:
+    select#type2 name="type2" 
+        - types.each do |type| 
+            option value="#{type['Id']}"#{type['Type']} 
 
 
-        input type="submit" value="Create"
+    input type="submit" value="Create"
 - else
     p You do not have access to this function

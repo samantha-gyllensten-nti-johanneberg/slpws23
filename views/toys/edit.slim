@@ -1,5 +1,5 @@
 
-- if users['Admin'] == "Admin"
+- if userresult['Admin'] == "Admin"
     div.edit_entry
 
         div.exit
@@ -23,7 +23,7 @@
                         label for="type" Type:
                         select#type name="type" 
                             option selected="" value="#{toys['TypeId']}" #{toys['Type']}
-                            - alltypes.each do |type| 
+                            - types.each do |type| 
                                 option value="#{type['Id']}" #{type['Type']}
                 br
 

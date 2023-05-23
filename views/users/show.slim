@@ -3,15 +3,15 @@
 /     / code that does stuff
 / - else
 div#userwrapper
-    h1 Username: #{users['Username']}
+    h1 Username: #{userresult['Username']}
 
-    a href="/users/#{users['Id']}/edit" 
+    a href="/users/#{userresult['Id']}/edit" 
         p Edit 
     a href="/users/" 
         p Log out 
  
 div#otheruserswrapper 
-    - if users['Admin'] == "Admin" 
+    - if userresult['Admin'] == "Admin" 
         h1 Users: 
         ul
             - userlist.each do |user| 

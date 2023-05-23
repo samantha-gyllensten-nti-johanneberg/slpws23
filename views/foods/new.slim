@@ -1,4 +1,4 @@
-- if users['Admin'] == "Admin"
+- if userresult['Admin'] == "Admin"
     - if session[:type_match]
         p You have entered repeated types
 
@@ -14,17 +14,17 @@
 
         label for="type1" Type 1:
         select#type1 name="type1" 
-            - alltypes.each do |type| 
+            - types.each do |type| 
                 option value="#{type['Id']}" #{type['Type']} 
 
         label for="type2" Type 2:
         select#type2 name="type2" 
-            - alltypes.each do |type| 
+            - types.each do |type| 
                 option value="#{type['Id']}" #{type['Type']}
 
         label for="type3" Type 3:
         select#type3 name="type3" 
-            - alltypes.each do |type| 
+            - types.each do |type| 
                 option value="#{type['Id']}" #{type['Type']}
 
         label for="amount" Amount:

@@ -14,7 +14,7 @@ html lang="en"
 
                 div#login_nav_wrapper
                     - if session[:log_in] # needs to also check if admin or user
-                        a href="/users/#{users['Id']}" 
+                        a href="/users/#{userresult['Id']}" 
                             div.login_button
                                 p Account
                     - else

@@ -22,7 +22,7 @@ div.exit
         p Age: #{monsters['Age']}
         p #{monsters['Description']}
         h3 Types:
-        - types.each do |type|
+        - foodtypes.each do |type|
             p #{type['Type']}
 
         div.buy
@@ -35,7 +35,7 @@ div.exit
         h2 Total Amount: #{foods['MarketAmount']}
         p #{foods['Description']}
         h3 Types:
-        - types.each do |type|
+        - foodtypes.each do |type|
             p #{type['Type']}
 
         div.buy

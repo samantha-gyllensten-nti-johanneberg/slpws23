@@ -7,12 +7,13 @@ div#monsterinfo
     p Age: #{monsters['Age']}
     p #{monsters['Description']}
     h3 Types:
-    - types.each do |type|
+    - monstertypes.each do |type|
         p #{type['Type']}
 
     div.editbutton 
         a href="/monsters/#{monsters['Id']}/edit" 
             p Edit
-    div.sell
-        form action="/monsters/#{monsters['Id']}/sell" method="post"
-            input type="submit" Value="Sell"
+    - if userresult['Admin'] != "Admin"
+        div.sell
+            form action="/monsters/#{monsters['Id']}/sell" method="post"
+                input type="submit" Value="Sell"
