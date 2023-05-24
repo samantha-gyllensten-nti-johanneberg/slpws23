@@ -137,9 +137,10 @@ get('/users/:id/edit') do
 
     if userresult['Id'] != id
         userresult = user(id)
+        slim(:"users/edit", locals:{userresult:userresult})
+    else
+        slim(:"users/edit")
     end
-
-    slim(:"users/edit")
 end
 
 # Checks if password and username are either that of the user being edited, or an Admin
