@@ -305,6 +305,8 @@ post('/monsters') do
     @sold = 1
     session[:type_match] = false
 
+    p "it is posting check"
+
     if @type1 == @type2
         session[:type_match] = true
         redirect('/monsters/new')
@@ -433,6 +435,9 @@ get('/foods/:id') do
     
     result = food(id)
     typeresult = food_types(id)
+    if result == nil
+        redirect('/foods/')
+    end
 
     slim(:"foods/show", locals:{foods:result, foodtypes:typeresult})
 end

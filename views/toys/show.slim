@@ -1,18 +1,21 @@
-div.exit
-    a href="/toys/" Exit
+- if userresult['Id'] == toys['UserId']
+    div.exit
+        a href="/toys/" Exit
 
-div#toyinfo
-    h1 #{toys['Name']}
-    / img src="#{monsters['ImageLink']}" alt=""/
-    / p Types:
-    p #{toys['Description']}
-    p Works with #{toys['Type']} type pets!
+    div#toyinfo
+        h1 #{toys['Name']}
+        / img src="#{monsters['ImageLink']}" alt=""/
+        / p Types:
+        p #{toys['Description']}
+        p Works with #{toys['Type']} type pets!
 
-    - if userresult['Admin'] == "Admin"
-        div.editbutton 
-            a href="/toys/#{toys['Id']}/edit" 
-                p Edit
-    - else
-        div.sell
-            form action="/toys/#{toys['Id']}/sell" method="post"
-                input type="submit" Value="Sell"
+        - if userresult['Admin'] == "Admin"
+            div.editbutton 
+                a href="/toys/#{toys['Id']}/edit" 
+                    p Edit
+        - else
+            div.sell
+                form action="/toys/#{toys['Id']}/sell" method="post"
+                    input type="submit" Value="Sell"
+- else 
+    p You do not have access to this function                  

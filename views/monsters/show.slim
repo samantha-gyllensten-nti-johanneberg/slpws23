@@ -1,19 +1,22 @@
-div.exit
-    a href="/monsters/" Exit
+- if userresult['Id'] == monsters['UserId']
+    div.exit
+        a href="/monsters/" Exit
 
-div#monsterinfo
-    h1 #{monsters['Name']}
-    / img src="#{monsters['ImageLink']}" alt="Photo of pet"/
-    p Age: #{monsters['Age']}
-    p #{monsters['Description']}
-    h3 Types:
-    - monstertypes.each do |type|
-        p #{type['Type']}
+    div#monsterinfo
+        h1 #{monsters['Name']}
+        / img src="#{monsters['ImageLink']}" alt="Photo of pet"/
+        p Age: #{monsters['Age']}
+        p #{monsters['Description']}
+        h3 Types:
+        - monstertypes.each do |type|
+            p #{type['Type']}
 
-    div.editbutton 
-        a href="/monsters/#{monsters['Id']}/edit" 
-            p Edit
-    - if userresult['Admin'] != "Admin"
-        div.sell
-            form action="/monsters/#{monsters['Id']}/sell" method="post"
-                input type="submit" Value="Sell"
+        div.editbutton 
+            a href="/monsters/#{monsters['Id']}/edit" 
+                p Edit
+        - if userresult['Admin'] != "Admin"
+            div.sell
+                form action="/monsters/#{monsters['Id']}/sell" method="post"
+                    input type="submit" Value="Sell"
+- else 
+    p You do not have access to this function

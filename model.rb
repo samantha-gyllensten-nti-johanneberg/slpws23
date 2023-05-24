@@ -405,11 +405,12 @@ module Model
     #   * :Name [String] the name of the food 
     #   * :Description [String] the description of the food 
     #   * :MarketAmount [Integer] the amount of food in total
+    #   * :UserId [Integer] the user's Id
     def food(id)
         if userresult['Admin'] == "Admin"
             return $db.execute("SELECT foods.Id, foods.name, foods.Description, market_foods.MarketAmount FROM foods INNER JOIN market_foods ON market_foods.FoodId = foods.Id WHERE foods.Id = ?", id).first
         else
-            return $db.execute("SELECT foods.Id, foods.name, foods.Description, users_foods_rel.FoodAmount FROM foods INNER JOIN market_foods ON market_foods.FoodId = foods.Id INNER JOIN users_foods_rel ON users_foods_rel.FoodId = foods.Id WHERE foods.Id = ? AND UserId = ?", id, userresult['Id']).first
+            return $db.execute("SELECT foods.Id, foods.name, foods.Description, users_foods_rel.FoodAmount, users_foods_rel.UserId FROM foods INNER JOIN market_foods ON market_foods.FoodId = foods.Id INNER JOIN users_foods_rel ON users_foods_rel.FoodId = foods.Id WHERE foods.Id = ? AND UserId = ?", id, userresult['Id']).first
         end
     end
 
