@@ -8,6 +8,7 @@ require 'bcrypt'
 # require 'yard-sinatra'
 enable :sessions
 
+# Module containing all the "arbetskod"
 module Model
 
     # Compares the username and password against those registered in the database
@@ -117,16 +118,22 @@ module Model
         return db
     end
 
+    # Allows foreign keys
+    def foreign_keys_true()
+        # Executes code necessary for CASCADE SQL functions
+        $db.execute("PRAGMA foreign_keys = ON")
+    end
+
     # Checks if the username is registered in the database
     # 
-    # @params [String] username, the username
+    # @param [String] username, the username
     # 
     # @return [Hash]
-    #   *:Id [Integer] the Id of the user
-    #   *:Username [String] the username of the user
-    #   *:Password [String] the password of the user
-    #   *:Admin [String] the admin status of the user
-    #   *:TimeoutLogin [String] the timeout status for login attempts
+    #   * :Id [Integer] the Id of the user
+    #   * :Username [String] the username of the user
+    #   * :Password [String] the password of the user
+    #   * :Admin [String] the admin status of the user
+    #   * :TimeoutLogin [String] the timeout status for login attempts
     def checkusername(username)
         username = username
         checkuser = $db.execute("SELECT * FROM users WHERE Username = ?", username)
@@ -136,7 +143,7 @@ module Model
 
     # Checks if the password matches the one registered to the username in the database
     # 
-    # @params [String] username, the username
+    # @param [String] username, the username
     # @param password [String] the password
     # 
     # @return [boolean]
@@ -156,7 +163,7 @@ module Model
 
     # Checks if the username is not already registered and the two entered passwords match to be inserted into the database
     # 
-    # @params [String] username the username
+    # @param [String] username the username
     # @param password [String] the password
     # @param [String] confirm_password the repeated password for validation purposes
     # 
@@ -188,7 +195,7 @@ module Model
 
     # Inserts the user into the database
     # 
-    # @params [String] username the username
+    # @param [String] username the username
     # @param password [String] the password
     def register_user(username, password)
         $db.execute("INSERT INTO users (Username, Password) VALUES (?, ?)", username, password)
@@ -196,7 +203,7 @@ module Model
 
     # Finds the Id of the user and assigns a session to its value
     # 
-    # @params [String] username the username
+    # @param [String] username the username
     def find_user_id(username)
         #Checks the id of the user and assigns it to the session
         id = $db.execute("SELECT Id FROM users WHERE Username LIKE ?", username).first
@@ -206,31 +213,31 @@ module Model
     # Selects the Id, Username and Admin status from users
     # 
     # @return [Hash]
-    #   *:Id [Integer] the Id of each user
-    #   *:Username [String] the username of each user
-    #   *:Admin [String] the Admin status of each user
+    #   * :Id [Integer] the Id of each user
+    #   * :Username [String] the username of each user
+    #   * :Admin [String] the Admin status of each user
     def all_users()
         return $db.execute("SELECT Id, Username, Admin FROM users")
     end
 
     # Selects all information from a users entry in the users table
     # 
-    # @params id [Integer] the Id of each user
+    # @param id [Integer] the Id of each user
     # 
     # @return [Hash]
     #   * :Id [Integer] the Id of each user
     #   * :Username [String] the username of each user
     #   * :password [String] the password
     #   * :Admin [String] the Admin status of each user
-    #   *:TimeoutLogin [String] the timeout status for login attempts
+    #   * :TimeoutLogin [String] the timeout status for login attempts
     def user(id)
         return $db.execute("SELECT * FROM users WHERE Id = ?", id).first
     end
 
     # Attempts to update a username inside the database with the corresponding Id
     # 
-    # @params [String] username the username
-    # @params id [Integer] the Id of each user
+    # @param [String] username the username
+    # @param id [Integer] the Id of each user
     def username_update(username, id)
         $db.execute("UPDATE users SET Username = ? WHERE Id = ?", username, id)
     end
@@ -238,7 +245,7 @@ module Model
     # Attempts to update a password inside the database with the corresponding Id
     # 
     # @param password [String] the password
-    # @params id [Integer] the Id of each user
+    # @param id [Integer] the Id of each user
     def password_update(password, id)
         password = BCrypt::Password.create(password)
         $db.execute("UPDATE users SET Password = ? WHERE Id = ?", password, id)
@@ -246,7 +253,7 @@ module Model
 
     # Attempts to delete a user with the corresponding Id
     # 
-    # @params id [Integer] the Id of each user
+    # @param id [Integer] the Id of each user
     def delete_user(id)
         $db.execute("DELETE FROM users WHERE id = ?", id)
     end
@@ -268,7 +275,7 @@ module Model
 
     # Selects all the information of the entries in the monsters table where the userid corresponds to the parameter
     # 
-    # @params id [Integer] the Id of a specific user
+    # @param id [Integer] the Id of a specific user
     # 
     # @return [Hash]
     #   * :Id [Integer] the Id of the monster
@@ -285,7 +292,7 @@ module Model
 
     # Select all the information of one entry with the corresponding Id to the parameter
     # 
-    # @params id [Integer] the Id of a specific monster
+    # @param id [Integer] the Id of a specific monster
     # 
     # @return [Hash]
     #   * :Id [Integer] the Id of the monster
@@ -302,7 +309,7 @@ module Model
 
     # Selects the monsters Types and Type Ids using inner join on the monsters, types, and monsters_types_rel tables with the corresponding Monster Ids to the parameter
     # 
-    # @params id [Integer] the Id of a specific monster
+    # @param id [Integer] the Id of a specific monster
     # 
     # @return [Hash]
     #   * :TypeId [Integer] the Id of the type
@@ -322,7 +329,7 @@ module Model
 
     # Selects the previous TypeId for a monster with the corresponding id to the parameter
     # 
-    # @params id [Integer] the Id of a specific monster
+    # @param id [Integer] the Id of a specific monster
     # 
     # @return [Hash]
     #  * :TypeId [Integer] the Id of the monster's type
@@ -354,14 +361,14 @@ module Model
 
     # Attempts to delete an entry in the monster table
     # 
-    # @params id [Integer] the Id of a specific monster
+    # @param id [Integer] the Id of a specific monster
     def delete_monster(id)
         $db.execute("DELETE FROM monsters WHERE id = ?", id)
     end
 
     # Attemtps to select all the information of all entries in the foods table
     # 
-    # @params id [Integer] the Id of a specific monster
+    # @param id [Integer] the Id of a specific monster
     # 
     # @return [Hash]
     #   * :Id [Integer] the Id of each food
@@ -373,7 +380,7 @@ module Model
 
     # Selects the amount of food, the name, the Id and the description of the food the user has from the foods and users_foods_rel tables, the food's id, name and description from all entries where the UserId corresponds to the given parameter
     # 
-    # @params id [Integer] the Id of a specific monster
+    # @param id [Integer] the Id of a specific monster
     # 
     # :@return [Hash]
     #   * :FoodAmount [Integer] the amount of food registered to a user
@@ -386,7 +393,7 @@ module Model
 
     # Selects all entries with the corresponding foodid to the given parameter, selecting the id, name, description and food amount registered to the user. If the user is an admin, it selects the total amount of food instead of the amount registered to the user.
     # 
-    # @params id [Integer] the Id of a specific user
+    # @param id [Integer] the Id of a specific user
     # 
     # @return [Hash]
     #   * :Id [Integer] the Id of each food 
@@ -408,7 +415,7 @@ module Model
 
     # Selects the typeid and type name from the foods, types, and foods_types_rel tables where the foodid corresponds to the given parameter
     # 
-    # @params id [Integer] the Id of a specific food
+    # @param id [Integer] the Id of a specific food
     # 
     # @return [Hash]
     #   * :TypeId [Integer] the Id of the type
@@ -432,7 +439,7 @@ module Model
 
     # Selects the typeid of the food's previous types
     # 
-    # @params id [Integer] the Id of a specific food
+    # @param id [Integer] the Id of a specific food
     # 
     # @return [Hash]
     #   * :TypeId [Integer] the Id of the type
@@ -628,7 +635,7 @@ module Model
 
     # Attempts to update the sold status of the sold item, where the sold items id corresponds to the given parameter, validating with the user's id that they own the item being sold, or being sent an error message
     # 
-    #     # # @param id [Integer] the Id of the item
+    # @param id [Integer] the Id of the item
     def sell(id)
         userid = userresult['Id']
 

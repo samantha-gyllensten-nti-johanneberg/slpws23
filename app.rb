@@ -14,27 +14,37 @@ include Model
 
 # Declares a global variable for database access
 $db = connect_to_db_hash()
-# Executes SQL code required for CASCADE SQL functions
-$db.execute("PRAGMA foreign_keys = ON")
+# Allows foreign keys
+foreign_keys_true()
 
-
+# Helper Functions
 helpers do
+    # Selects the Id, Username and Admin Status of the user where the id corresponds to the session id
+    # 
+    # @return [Hash]
+    #   * :Id [Integer] Id of the user
+    #   * :Username [String] Username of the user
+    #   * :Admin [String] The admin status of the user
     def userresult()
         id = session[:id]
-        userresult = $db.execute("SELECT * FROM users WHERE Id = ?", id).first
+        userresult = $db.execute("SELECT Id, Username, Admin FROM users WHERE Id = ?", id).first
         
         return userresult
     end
 
+    # Selects all the information of all entries in types
+    # 
+    # @return [Hash]
+    #   * :Id [Integer] Id of the type
+    #   * :Type [String] the name of the type
     def types()
         result = $db.execute("SELECT * FROM types")
         return result
     end
 end
 
+# Before block that checks if the user is logged in when trying to access routes containing the restricted paths for logged out users, and otherwise redirects back to the landing page
 before do
-    
-    userresult = userresult()
 
     restricted_paths = ['/monsters', '/market', '/toys', '/foods']
 
@@ -79,7 +89,7 @@ end
 
 # Attempts to log the user in using the login form
 # 
-# @param username [String], the username
+# @param username [String] the username
 # @param password [String] the password entered
 # 
 # @see Model#check_login
@@ -98,9 +108,9 @@ end
 
 # Attempts to register users using the registration form
 # 
-# @param [String] username, the username
-# @param [String] password, the password
-# @param [String] confirm_password, the password confirmation
+# @param [String] username the username
+# @param [String] password the password
+# @param [String] confirm_password the password confirmation
 # 
 # @see Model#check_register
 post('/register_user') do
@@ -119,7 +129,7 @@ end
 
 # Displays an edit form for the user with the :id
 # 
-# @param [Integer] :id, the ID of the user being edited (note, not necessarily active user)  
+# @param [Integer] :id the ID of the user being edited (note, not necessarily active user)  
 # 
 # @see Model#user
 get('/users/:id/edit') do
@@ -134,9 +144,9 @@ end
 
 # Checks if password and username are either that of the user being edited, or an Admin
 # 
-# @param [String] password, the password
-# @param [String] username, the username
-# @param [Integer] :id, the Id of the edited user
+# @param [String] password the password
+# @param [String] username the username
+# @param [Integer] :id the Id of the edited user
 # 
 # @see Model#checkpassword
 # @see Model#user
@@ -186,9 +196,9 @@ end
 
 # Updates users information in database
 # 
-# @param [String] username, the username
-# @param [String] password, the password
-# @param [Integer] :id, the Id of the edited user
+# @param [String] username the username
+# @param [String] password the password
+# @param [Integer] :id the Id of the edited user
 # 
 # @see Model#username_update
 # @see Model#password_update
@@ -210,7 +220,7 @@ end
 
 # Deletes user from database
 # 
-# @param [Integer] :id, the Id of the deleted user
+# @param [Integer] :id the Id of the deleted user
 # 
 # @see Model#delete_user
 post('/users/:id/delete') do
@@ -222,7 +232,7 @@ end
 
 # Displays users monsters, or all monsters if the user is an Admin
 # 
-# @param [Integer] :id, the logged in users' Id
+# @param [Integer] :id the logged in users' Id
 # 
 # @see Model#all_monsters
 # @see Model#user_monsters
@@ -244,7 +254,7 @@ end
 
 # Displays a monsters information
 # 
-# @param [Integer] :id, the monster's Id
+# @param [Integer] :id the monster's Id
 # 
 # @see Model#monster
 # @see Model#monster_types
@@ -259,7 +269,7 @@ end
 
 # Displays a form to edit a monsters information
 # 
-# @param [Integer] :id, the monster's Id
+# @param [Integer] :id the monster's Id
 # 
 # @see Model#monster
 # @see Model#monster_types
@@ -274,14 +284,14 @@ end
 
 # Attempts to insert an entry into the monsters table in the database
 # 
-# @param [String] name, the name of the monster
-# @param [Integer] age, the age of the monster
-# @param [String] desc, the description of the monster
-# @param [Integer] type1, the first type for the monster using the Type's Id
-# @param [Integer] type2, the second type for the monster using the Type's Id
-# @param [Integer] userid, the Id of the user and owner the monster
-# @param [String] fed, the fed status of the monster - automatically fed upon creation
-# @param [Integer] sold, the status of if the monster is being sold - in binary 1 is being sold and the monster is automatically sold upon creation
+# @param [String] name the name of the monster
+# @param [Integer] age the age of the monster
+# @param [String] desc the description of the monster
+# @param [Integer] type1 the first type for the monster using the Type's Id
+# @param [Integer] type2 the second type for the monster using the Type's Id
+# @param [Integer] userid the Id of the user and owner the monster
+# @param [String] fed the fed status of the monster - automatically fed upon creation
+# @param [Integer] sold the status of if the monster is being sold - in binary 1 is being sold and the monster is automatically sold upon creation
 # 
 # @see Model#new_monster
 post('/monsters') do
@@ -307,13 +317,13 @@ end
 
 # Attempts to update an entry into the monsters table in the database
 # 
-# @param [Integer] :id, the monster's Id
-# @param [String] name, the name of the monster
-# @param [Integer] age, the age of the monster
-# @param [String] desc, the description of the monster
-# @param [Integer] type1, the first type for the monster using the Type's Id
-# @param [Integer] type2, the second type for the monster using the Type's Id
-# @param [Array] previous_types, an array containing the previous types of the monster
+# @param [Integer] :id the monster's Id
+# @param [String] name the name of the monster
+# @param [Integer] age the age of the monster
+# @param [String] desc the description of the monster
+# @param [Integer] type1 the first type for the monster using the Type's Id
+# @param [Integer] type2 the second type for the monster using the Type's Id
+# @param [Array] previous_types an array containing the previous types of the monster
 # 
 # @see Model#previous_types_monster
 # @see Model#update_monster
@@ -346,8 +356,8 @@ end
 
 # Attempts to update a monster's entry to display as being sold on the market. Temporarily moved to Admin user
 # 
-# @param [Integer] :id. the monster's Id
-# @param [String] sold_item, declares that the sold item is a monster
+# @param [Integer] :id the monster's Id
+# @param [String] sold_item declares that the sold item is a monster
 # 
 # @see Model#sell
 post('/monsters/:id/sell') do 
@@ -364,7 +374,7 @@ end
 
 # Attempts to delete an entry from the monster table
 # 
-# @param [Integer] :id. the monster's Id
+# @param [Integer] :id the monster's Id
 # 
 # @see Model#delete_monster
 post('/monsters/:id/delete') do
@@ -383,7 +393,7 @@ end
 
 # Displays a users foods, or if the user is an Admin, all foods
 # 
-# @param [Integer] :id, the user's id
+# @param [Integer] :id the user's id
 # 
 # @see Model#all_foods
 # @see Model#user_foods
@@ -414,7 +424,7 @@ end
 
 # Displays the information for the correlating food to id
 # 
-# @param [Integer] :id, the food's Id
+# @param [Integer] :id the food's Id
 # 
 # @see Model#food
 # @see Model#food_types
@@ -429,7 +439,7 @@ end
 
 # Displays a form to edit a food's entry
 # 
-# @param [Integer] :id, the food's Id
+# @param [Integer] :id the food's Id
 # 
 # @see Model#food
 # @see Model#food_types
@@ -444,12 +454,12 @@ end
 
 # Attempts to create a new entry for food in the foods table
 # 
-# @param [String] name, the food's name
-# @param [String] desc, the food's description
-# @param [Integer] type1, the first type capable of consuming the food
-# @param [Integer] type2, the second type capable of consuming the food
-# @param [Integer] type3, the third type capable of consuming the food
-# @param [Integer] amount, the amount of food available in total
+# @param [String] name the food's name
+# @param [String] desc the food's description
+# @param [Integer] type1 the first type capable of consuming the food
+# @param [Integer] type2 the second type capable of consuming the food
+# @param [Integer] type3 the third type capable of consuming the food
+# @param [Integer] amount the amount of food available in total
 # 
 # @see Model#new_food
 post('/foods') do
@@ -474,14 +484,14 @@ end
 
 # Attempts to update an existing entry in the food table
 # 
-# @param [String] name, the food's name
-# @param [String] desc, the food's description
-# @param [Integer] type1, the first type capable of consuming the food
-# @param [Integer] type2, the second type capable of consuming the food
-# @param [Integer] type3, the third type capable of consuming the food
-# @param [Integer] amount, the amount of food available in total
-# @param [Array] previous_types, an array containing the previous types of the food
-# @param [Integer] amount, the amount of food available in total 
+# @param [String] name the food's name
+# @param [String] desc the food's description
+# @param [Integer] type1 the first type capable of consuming the food
+# @param [Integer] type2 the second type capable of consuming the food
+# @param [Integer] type3 the third type capable of consuming the food
+# @param [Integer] amount the amount of food available in total
+# @param [Array] previous_types an array containing the previous types of the food
+# @param [Integer] amount the amount of food available in total 
 # 
 # @see Model#update_food
 post('/foods/:id/update') do
@@ -510,7 +520,7 @@ end
 
 # Attempts to delete an entry from the food table
 # 
-# @param [Integer] :id, the food's Id
+# @param [Integer] :id the food's Id
 # 
 # @see Model#delete_food
 post('/foods/:id/delete') do
@@ -524,13 +534,9 @@ post('/foods/:id/delete') do
     redirect("/foods/")
 end
 
-
-
-
-
 # Displays the users toys, or all toys if the user is an admin
 # 
-# @param [Integer] :id, the user's Id
+# @param [Integer] :id the user's Id
 # 
 # @see Model#all_toys
 # @see Model#user_toys
@@ -552,7 +558,7 @@ end
 
 # Displays the information of a toy
 # 
-# @param [Integer] :id, the toy's Id
+# @param [Integer] :id the toy's Id
 # 
 # @see Model#toy
 get('/toys/:id') do
@@ -564,7 +570,7 @@ end
 
 # Displays a form to edit an entry in the toy table
 # 
-# @param [Integer] :id, the toy's Id
+# @param [Integer] :id the toy's Id
 # 
 # @see Model#toy
 get('/toys/:id/edit') do
@@ -577,10 +583,10 @@ end
 
 # Attempts to create a new entry in the toy table
 # 
-# @param [String] name, the toy's name
-# @param [String] desc, the toy's description
-# @param [Integer] type, the toy's type Id
-# @param [Integer] sold, the toy's sold status which defaults to 1 which corresponds to being sold and is displayed in binary
+# @param [String] name the toy's name
+# @param [String] desc the toy's description
+# @param [Integer] type the toy's type Id
+# @param [Integer] sold the toy's sold status which defaults to 1 which corresponds to being sold and is displayed in binary
 # 
 # @see Model#new_toy
 post('/toys') do
@@ -598,10 +604,10 @@ end
 
 # Attempts to update an entry in the toy table
 # 
-# @param [Integer] :id, the toy's Id
-# @param [String] name, the toy's name
-# @param [String] desc, the toy's description
-# @param [Integer] type, the toy's type Id
+# @param [Integer] :id the toy's Id
+# @param [String] name the toy's name
+# @param [String] desc the toy's description
+# @param [Integer] type the toy's type Id
 # 
 # @see Model#update_toy
 post('/toys/:id/update') do
@@ -620,7 +626,7 @@ end
 
 # Attempts to update a toy's entry to display as being sold on the market. Temporarily moved to Admin user
 # 
-# @param [Integer] :id, the toy's Id
+# @param [Integer] :id the toy's Id
 # 
 # @see Model#sell
 post('/toys/:id/sell') do 
@@ -637,7 +643,7 @@ end
 
 # Attempts to delete an entry from the toys table
 # 
-# @param [Integer] :id, the toy's Id
+# @param [Integer] :id the toy's Id
 # 
 # @see Model#delete_toy
 post('/toys/:id/delete') do
@@ -652,7 +658,6 @@ post('/toys/:id/delete') do
 end
 
 
-
 # Displays sold monsters, foods, and toys
 get('/market/') do
     
@@ -665,7 +670,7 @@ end
 
 # Displays the information of a toy entry that is being sold
 # 
-# @param [Integer] :id, the toy's Id
+# @param [Integer] :id the toy's Id
 # 
 # @see Model#toy
 get("/market/toys/:id") do
@@ -678,8 +683,8 @@ end
 
 # Attempts to update the toy's sold status and register a new user/owner
 # 
-# @param [Integer] :id, the toy's Id
-# @param [String] purchased_item, the type of object being purchased/updated
+# @param [Integer] :id the toy's Id
+# @param [String] purchased_item the type of object being purchased/updated
 # 
 # @see Model#purchase
 post("/market/toys/:id/update") do
@@ -693,7 +698,7 @@ end
 
 # Displays the information of a food entry that is being sold
 # 
-# @param [Integer] :id, the food's Id
+# @param [Integer] :id the food's Id
 # 
 # @see Model#market_food
 # @see Model#food_types
@@ -709,9 +714,9 @@ end
 
 # Attempts to update the food's sold status and register a new user/owner
 # 
-# @param [Integer] :id, the food's Id
-# @param [String] purchased_item, the type of object being purchased/updated
-# @param [Integer] amount, the amount of the object being purchased
+# @param [Integer] :id the food's Id
+# @param [String] purchased_item the type of object being purchased/updated
+# @param [Integer] amount the amount of the object being purchased
 # 
 # @see Model#purchase
 post("/market/foods/:id/update") do
@@ -726,7 +731,7 @@ end
 
 # Displays the information of a monster's entry that is being sold
 # 
-# @param [Integer] :id, the monster's Id
+# @param [Integer] :id the monster's Id
 # 
 # @see Model#monster
 # @see Model#monsters_types
@@ -742,8 +747,8 @@ end
 
 # Attempts to update the monster's sold status and register a new user/owner
 # 
-# @param [Integer] :id, the monster's Id
-# @param [String] purchased_item, the type of object being purchased/updated
+# @param [Integer] :id the monster's Id
+# @param [String] purchased_item the type of object being purchased/updated
 # 
 # @see Model#purchase
 post("/market/monsters/:id/update") do
